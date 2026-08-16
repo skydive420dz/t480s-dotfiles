@@ -1,3 +1,6 @@
 {
-  imports = [ ./tmux.nix ];
+  imports = [
+    ./sessions.nix
+    ./tmux.nix
+  ];
 }

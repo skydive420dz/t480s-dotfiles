@@ -1,5 +1,4 @@
 alias vi 'emacsclient -t -a emacs'
-alias vim 'emacsclient -t -a emacs'
 alias v 'emacsclient -t -a emacs'
 alias fm ranger
 
