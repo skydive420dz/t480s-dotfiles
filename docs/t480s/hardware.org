@@ -1,0 +1,59 @@
+#+title: T480s Hardware Facts
+#+startup: overview
+
+* Verified From The Live Machine
+| Component | Fact |
+|-----------+------|
+| Model | Lenovo ThinkPad T480s, type 20L70025US |
+| Firmware | N22ET74P 1.51, 2022-07-21 |
+| Boot mode | UEFI |
+| CPU | Intel Core i7-8650U, 4 cores / 8 threads |
+| Memory | 24 GiB |
+| GPU | Intel UHD 620 8086:5917 using i915 |
+| Internal display | eDP-1, 1920x1080 |
+| Storage | 1 TB SanDisk/WD SN5100 NVMe; no recognized partition table |
+| NVMe health | 0 percent used, no media errors, 14 power cycles |
+| Wi-Fi | Intel AX210 using iwlwifi |
+| Ethernet | Intel I219-LM using e1000e |
+| Bluetooth | AX210 Bluetooth detected |
+| Audio controller | Intel Sunrise Point-LP HDA using snd_hda_intel |
+| Thunderbolt | Intel JHL6240, domain authorized in live session |
+| Battery | BAT0; 57 Wh design, 47.09 Wh full, 201 cycles |
+| Sleep | s2idle and deep supported; deep selected in live session |
+| TPM | TPM 2.0 |
+
+* Storage Constraint
+The only detected internal target is one NVMe device.  Same-disk Btrfs
+snapshots are useful recovery points but are not backups.  The T430 Btrfs send
+design stays deferred until a real independent destination is selected.
+
+The proposed installation basis is GPT, a 1 GiB EFI System Partition, about
+32 GiB dedicated swap for hibernation margin, and Btrfs for the remaining
+space.  Exact devices, boundaries, UUIDs, subvolumes, mounts, and resume identity
+must be reviewed at the destructive storage gate.
+
+* Facts Requiring Installed Or Physical Tests
+- Speaker, headphone, microphone, and display-audio routes.
+- Actual external connector, monitor modes, refresh rate, and dock behavior.
+- Brightness and media-key event behavior.
+- Bluetooth pairing, audio profile, and MPRIS control.
+- Wi-Fi stability across suspend/resume.
+- TLP charge-threshold persistence.
+- Deep-suspend drain and wake reliability.
+- Hibernation image creation and resume through the installed boot chain.
+- Critical-battery behavior.
+- Thunderbolt firmware/security behavior.
+
+* Generated Hardware Configuration
+=host/t480s/system/hardware-configuration.nix= was generated from the mounted target
+on 2026-08-13 and then reviewed.  It records:
+
+- Btrfs UUID =995d2695-879e-4577-aaaf-9fed26eed6f4= for =@root= and =@home=;
+- ESP UUID =878D-A749=;
+- swap/resume UUID =28d5c812-d3e4-4ba2-8cd0-535a35162ab6=;
+- generated initrd availability for =xhci_pci=, =nvme=, and =usb_storage=;
+- x86_64 host platform and Intel microcode ownership.
+
+The source adds the actual =compress=zstd,noatime= mount intent and explicitly
+uses the dedicated swap partition as =boot.resumeDevice=.  This is reviewed
+source evidence, not build, installation, boot, or hibernation acceptance.

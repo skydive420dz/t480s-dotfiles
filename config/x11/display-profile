@@ -1,0 +1,43 @@
+#!/bin/sh
+set -eu
+
+internal=eDP-1
+external=${T480S_EXTERNAL_OUTPUT:-$(xrandr --query | awk '$2 == "connected" && $1 != "eDP-1" { print $1; exit }')}
+external_mode=${T480S_EXTERNAL_MODE:-3440x1440}
+
+require_external() {
+    if [ -z "$external" ]; then
+        echo "display-profile: no connected external output" >&2
+        exit 1
+    fi
+}
+
+case "${1-}" in
+    internal)
+        if [ -n "$external" ]; then
+            xrandr --output "$external" --off --output "$internal" --auto --primary
+        else
+            xrandr --output "$internal" --auto --primary
+        fi
+        ;;
+    external)
+        require_external
+        xrandr --output "$internal" --off --output "$external" --mode "$external_mode" --primary
+        ;;
+    mirror)
+        require_external
+        xrandr --output "$internal" --auto --primary --output "$external" --mode 1920x1080 --same-as "$internal"
+        ;;
+    extend-left)
+        require_external
+        xrandr --output "$external" --mode "$external_mode" --primary --left-of "$internal" --output "$internal" --auto
+        ;;
+    extend-right)
+        require_external
+        xrandr --output "$external" --mode "$external_mode" --primary --right-of "$internal" --output "$internal" --auto
+        ;;
+    *)
+        echo "usage: display-profile {internal|external|mirror|extend-left|extend-right}" >&2
+        exit 2
+        ;;
+esac

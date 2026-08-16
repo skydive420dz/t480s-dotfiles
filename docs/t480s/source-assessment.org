@@ -1,0 +1,45 @@
+#+title: T430 Source Assessment
+#+startup: overview
+
+* Sources
+- Live T430: =skydive420dz@192.168.1.216=
+- Available synchronized checkout on T430:
+  =/home/skydive420dz/Projects/gentoo-T430= at =1a78eadd=
+- Earlier architecture reference: audited during bootstrap; no foreign
+  repository history is part of this standalone baseline
+
+The originally named Mac path =~/Projects/gentoo-T430= was not present during
+the audit.  The clean T430 checkout was at =main= with zero divergence from its
+origin and was used as the repository comparison source.
+
+* Drift
+- Readable saved DWM, dmenu, slstatus, tmux, Fish, Ranger, Xresources, input,
+  display-profile, TLP, power, ACPI, and backup configuration matched live
+  state.
+- Live =.xinitrc= uses
+  =three-girls-anime-lakeside-3840x1600.png= while the repository referenced an
+  older wallpaper path.  The live wallpaper is used here.
+- Ranger license metadata and ALSA saved state differed without changing the
+  requested behavior.
+- Live untracked btop, neofetch, and Neovim state is not translated.
+- Root-only Limine, EFI, protected backup contents, and accepted critical-power
+  digest were not fully audited because unattended =doas= was unavailable.
+
+* Translation Decisions
+- Preserve DWM tags, layouts, colors, fonts, rules, and key behavior.
+- Substitute Brave, Emacs, and Ghostty for Firefox, Neovim, and =st=.
+- Retain Fish, tmux, Ranger/nsxiv, fastfetch, PipeWire, WirePlumber, BlueZ,
+  NetworkManager, SSH, charge thresholds, and power intent.
+- Use systemd-native ownership instead of OpenRC, ACPI scripts, or cron.
+- Do not copy T430 UUIDs, Limine, device paths, HD 4000 settings, Portage
+  feature files, kernel configuration, or firmware identifiers.
+- The T430 display script existed but no tracked DWM binding invoked it.  The
+  T480s script remains manual until the real external connector is tested.
+
+* Remaining Source Risks
+- The configured source builds DWM 6.8.  The existing X11 session still runs
+  the prior DWM 6.6 binary; restart and binding acceptance remain pending.
+- The clean Emacs configuration is reused with a deliberately smaller external
+  tool set.  Gate 2 proves closure realization; runtime acceptance must identify
+  any actually required missing executable rather than adding all MSI stacks.
+- XLibre has no native package in the pinned nixpkgs and is not bootstrap-owned.

@@ -1,0 +1,16 @@
+#+title: Brave Extensions
+
+* Manual Extensions
+
+AdNauseam belongs here if we decide to keep the unpacked Chromium build in the
+repo. Brave profile-generated extension state should stay out of git.
+
+* Policy Extensions
+
+Managed through =ExtensionSettings= in =system/modules/programs/brave.nix=:
+
+- Bitwarden: =nngceckbapebfimnlniiiahkandclblb=
+- I Still Don't Care About Cookies: =edibdbjcniadpccecjdfdjjppcpchdlm=
+- Video DownloadHelper: =lmjnegcaeklhafolokijcfjliaokphfk=
+
+ClearURLs is skipped for now because it was not available during the trial.

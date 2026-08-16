@@ -1,0 +1,57 @@
+#+title: T480s Gate 5B Technical Inventory Appendix
+#+startup: overview
+
+* Historical Status
+This appendix preserves the evidence used for Gate 5B.  Its observations are
+not current source/runtime claims.  The later approved ownership supersedes the
+store-backed Emacs direction with a live =config/emacs/= link.
+
+* Purpose
+This appendix preserves audit detail without turning implementation dependencies
+into user-facing decisions.  The short review form is the authorization
+surface.  This file must be updated to match the completed form before a build.
+
+* Verified Current Gaps
+| Capability | Current evidence | Derived implementation boundary |
+|------------+------------------+---------------------------------|
+| Emacs configuration | Live =~/.config/emacs= resolves to a broken out-of-store link; daemon loads defaults | Deploy configuration without requiring a repo clone on T480s |
+| Emacs runtime | T480s copied only a small generic tool list; MSI config expects grammar bundle, sync/vterm workflow and selected external tools | Derive only from languages approved in the short form |
+| Emacs shell | Copied MSI config hardcodes zsh for vterm while T480s intentionally uses Fish | Adapt terminal integration to Fish; exclude MSI session assumptions |
+| Kitty SSH sessions | =TERM=xterm-kitty= caused login failure | Add =kitty.terminfo= only, not Kitty |
+| Bluetooth media proxy | BlueZ unit is clean but disabled/inactive | Enable the native unit without redefining =ExecStart= |
+| Ranger appearance | T430 uses =ranger_devicons=; T480s lacks plugin/config | Package or deploy the exact plugin only if approved |
+| btop | Present in T430 world and MSI module; absent on T480s | Reuse small MSI btop module/config if approved |
+| ALSA controls | T430 owns =alsa-utils=; =amixer=/=alsamixer= absent on T480s | Add =alsa-utils= if approved |
+| ZIP tools | T430 workflows expose =zip=/=unzip=; absent on T480s | Add only approved archive tools |
+| CLI utilities | Reviewer explicitly selected =wget=, =jq=, =fzf= and =bat= | Add each explicitly; use Fish integration for =fzf=; do not infer a =cat= alias |
+| Media player | Reviewer explicitly selected =mpv= | Use lean package with YouTube support disabled and add only selected Ranger audio/video rules |
+| Git user configuration | Git exists; T480s identity/workflow not reconciled | Add only supplied identity and signing choices |
+
+* Dependency Rules
+- A capability approval includes its minimum runtime dependencies; those
+  dependencies must be shown in the proposed diff/build graph.
+- Do not import MSI's complete Emacs runtime list.
+- QML grammars, Qt language servers, Quickshell imports and GLSL tools stay out
+  unless the reviewer explicitly reverses that exclusion.
+- A language selection may add its language server, formatter and grammar, but
+  not unrelated language stacks.
+- Neovim runtime data is excluded unless a named approved Emacs feature is
+  proven to require it; the Neovim executable remains excluded.
+- =wget=, =jq=, =fzf= and =bat= are explicit reviewer selections, not inferred
+  dependencies.
+
+* Preserved Baseline
+- DWM, dmenu, slstatus, Xresources, wallpaper, Fish, tmux, fastfetch, Ranger,
+  nsxiv, Brave, Ghostty, PipeWire, WirePlumber, BlueZ, NetworkManager, OpenSSH,
+  TLP, UPower, startx, fonts and display-profile ownership already exist in the
+  T480s source.
+- Successful build, installation, first boot and core service health are
+  recorded separately.  Physical desktop and hardware acceptance remains Gate
+  6 and cannot be inferred from this inventory.
+
+* Deferred Experiments
+- Synaptics =06cb:009a= fingerprint support requires a community
+  =python-validity/open-fprintd= path and is not baseline-owned.
+- Fingerprint PAM is not a browser passkey authenticator.
+- XLibre and kernel specialization retain the accepted Xorg/stock-kernel
+  generation as rollback and require separate measured gates.

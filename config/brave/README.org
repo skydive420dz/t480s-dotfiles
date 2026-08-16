@@ -1,0 +1,24 @@
+#+title: Brave
+
+* Ownership
+
+Brave is split across two layers:
+
+- Home Manager installs the browser package.
+- NixOS writes global managed policy to =/etc/brave/policies/managed/sky.json=.
+- Brave owns live profile state under =~/.config/BraveSoftware/Brave-Browser=.
+
+The repo should not own Brave's generated profile preferences, history, tabs,
+bookmarks database, or installed extension cache.
+
+* Runtime Checks
+
+- Open =brave://policy= to confirm managed policy.
+- Open =brave://extensions= to inspect extension IDs before moving anything into policy.
+- Open =brave://sync= to manage the Sync Chain manually.
+
+* Extensions
+
+Store notes and manually unpacked extension sources under =config/brave/extensions=.
+Policy-installed extensions are listed in =system/modules/programs/brave.nix= only
+after their IDs are verified.

@@ -1,0 +1,63 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor / OS junk
+*.swp
+*.swo
+.DS_Store
+*~
+\#*\#
+.\#*
+Session.vim
+docs/vim
+.direnv/
+.env
+.env.*
+!.env.example
+.mind/
+
+# Build artifacts
+result
+result-*
+
+*.backup
+*.bak
+*.orig
+*.rej
+*.tmp
+*.sqlite
+*.sqlite-*
+*.db
+
+# aerc runtime data
+config/aerc/cache/
+config/aerc/.cache/
+config/aerc/sent/
+config/aerc/postpone/
+config/aerc/state
+# Generated Qt/QML language-server config can contain machine-local build paths.
+**/.qmlls.ini
+
+# Neovim logs
+nvim.log
+*.log
+
+# Clean Emacs experiment runtime/cache state belongs outside git.
+config/emacs/**/*.elc
+config/emacs/auto-save/
+config/emacs/auto-save-list/
+config/emacs/backups/
+config/emacs/eln-cache/
+config/emacs/elpa/
+config/emacs/history
+config/emacs/recentf
+
+# Local video wallpapers are large runtime assets, not repo state.
+wallpapers/*.mp4
+wallpapers/*.m4v
+wallpapers/*.mov
+wallpapers/*.webm
+wallpapers/*.mkv
+wallpapers/wallpaper-011.gif

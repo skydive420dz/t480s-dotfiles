@@ -1,0 +1,88 @@
+#+title: T480s Architecture
+#+startup: overview
+
+* Approved Source Graph
+#+begin_src mermaid
+flowchart TD
+  F[flake.nix] --> T[nixosConfigurations.t480s]
+  T --> HS[host/t480s/system/default.nix]
+  HS --> CS[core/system/default.nix]
+  HS --> HSM[host/t480s/system/modules]
+  HS --> ACC[inline access: user groups SSH sudo Fish shell]
+  HS --> HW[host/t480s/system/hardware-configuration.nix]
+  T --> HM[Home Manager]
+  HM --> HH[host/t480s/home/default.nix]
+  HH --> CH[core/home/default.nix]
+  HH --> HL[host live links: Xresources and display-profile]
+  CH --> L[Home Manager live links]
+  CH --> HP[packages: bat brave btop emacs fastfetch fish fzf ghostty git ranger tmux]
+  CH --> HU[user services: Emacs and native mpris-proxy]
+  L --> C[config/emacs fish ghostty ranger tmux]
+  HL --> XC[config/x11]
+  HSM --> X[Xorg startx DWM dmenu slstatus]
+  X --> SH[config/dwm config/dmenu config/slstatus]
+  CS --> CSP[packages: default brave fonts]
+  CS --> CSS[services: audio networking power]
+#+end_src
+
+This functional source graph passed static parsing, formatting, reference,
+build and temporary test-activation checks.  =/run/current-system= now uses
+its resulting candidate; the persistent profile and booted fallback remain
+older, and the existing X11 session still runs the prior DWM binary.
+
+The security-sensitive access block remains inline in the host root.  Moving
+it is structural only, but requires a separate exact review because it contains
+SSH keys and the existing restricted passwordless reboot/poweroff rules.
+
+* Flake Boundary
+The flake composes only =nixosConfigurations.t480s=.  It selects the concrete
+T480s system and Home Manager roots and supplies the repository path used by
+approved live links.  It does not import an MSI host, MSI defaults, MSI Secure
+Boot policy or another repository.
+
+The T480s host may import =core=.  Core may not import =host=.  Application
+configuration never imports Nix; modules only package or link it.
+
+* Behavior Ownership
+| Behavior | Provider |
+|----------+----------|
+| X server and startx session | T480s system X11 module |
+| Window management and exact tag/layout/key policy | overridden =pkgs.dwm= plus =config/dwm/dwm.h= |
+| Launcher | overridden =pkgs.dmenu= plus =config/dmenu/dmenu.h= |
+| Bar status | overridden =pkgs.slstatus= plus =config/slstatus/slstatus.h= |
+| Wallpaper, repeat rate and Xresources | T480s X11 module plus live =config/x11/= and =config/wallpaper/= sources |
+| Caps to Escape and natural scrolling | XKB and libinput |
+| Browser | Brave Home package and T480s-owned managed policy |
+| Editor | live =config/emacs/= plus explicitly selected external tools |
+| Terminal and multiplexer | Ghostty and tmux with live application configuration |
+| Shell and tty1 X startup | Fish with live configuration |
+| File/image workflow | Ranger live configuration, nsxiv and lean mpv |
+| Audio | PipeWire, WirePlumber, ALSA compatibility |
+| Bluetooth media | BlueZ and enable-only ownership of its native user =mpris-proxy= unit |
+| Networking and remote access | NetworkManager and OpenSSH |
+| Charge thresholds and AC/battery policy | TLP |
+| Lid and sleep keys | systemd-logind |
+| Critical battery | UPower, initially =PowerOff= |
+| Trim | weekly fstrim timer |
+
+* Application Substitutions
+| T430 role | T480s owner |
+|-----------+-------------|
+| Firefox | Brave |
+| Neovim | the clean Emacs configuration adapted and owned in this repository |
+| =st= | Ghostty |
+| OpenRC/ACPI/cron ownership | NixOS modules and systemd |
+
+The saved DWM configuration is retained except for the explicit Ghostty and
+=brightnessctl= substitutions.  =brightnessctl= replaces =xbacklight= because
+it owns the real kernel backlight interface on this machine.
+
+* Deferred Architecture
+- No XLibre overlay until the supported Xorg baseline passes.
+- No custom/ThinLTO kernel until runtime measurements justify it.
+- No backup timer until an independent destination is identified.
+- No hibernate critical action until controlled resume acceptance passes.
+- No language stack merely because the Emacs config contains optional support.
+- No fingerprint/PAM/browser-passkey stack until its driver, fallback and
+  authentication boundaries receive a separate decision.
+- Dormant modules remain candidates, not active architecture.

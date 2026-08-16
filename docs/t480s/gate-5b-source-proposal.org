@@ -1,0 +1,143 @@
+#+title: T480s Gate 5B Exact Source Proposal
+#+startup: overview
+
+* Historical Status
+This is the exact historical Gate 5B manifest and remains evidence for its
+2026-08-13 build.  It is not the manifest of the current standalone repository
+baseline.  The newer approved ownership makes =config/emacs/= live-editable
+outside the Nix store, superseding only the store-backed Emacs ownership clause
+below.  No current result may be inferred from this record.
+
+* Boundary
+This is the source manifest derived from the reviewer's checked form.  Its
+source-only implementation was prepared on 2026-08-13.  It passed parsing,
+format and whitespace checks, then a warning-clean non-activating build.  No
+package, configuration, unit or dependency may be added merely because it
+exists on MSI or T430.
+
+* System-Owned Changes
+** Packages
+Add exactly:
+
+- =alsa-utils=;
+- =kitty.terminfo=, without the Kitty application;
+- =unzip=;
+- =zip=;
+- =wget=;
+- =jq=.
+
+Keep the existing T480s system packages and services unchanged unless named
+below.  Do not import MSI's general package module.
+
+** Privilege policy
+Add only the T430-style passwordless operations approved by the reviewer:
+
+- reboot through the NixOS/systemd-owned command;
+- poweroff through the NixOS/systemd-owned command.
+
+Normal =sudo= remains password-protected.  The exact sudo command paths and
+arguments must be visible in the source diff.
+
+** Preserved services
+Keep the existing NetworkManager, OpenSSH, BlueZ, D-Bus, PipeWire,
+WirePlumber, TLP, UPower, fstrim, logind sleep policy and systemd-boot
+configuration.  No MSI hardware, GPU, audio-node or monitor rule is imported.
+
+* User-Owned Changes
+** Applications
+Add exactly:
+
+- =btop= with the small MSI Sky configuration;
+- =bat=, without silently aliasing =cat=;
+- =fzf= with Fish integration only;
+- =mpv= with YouTube support disabled;
+- the existing approved Brave, Ghostty, Emacs, Fish, tmux, Ranger, nsxiv and
+  fastfetch applications remain.
+
+** Ranger
+- deploy the exact T430 =ranger_devicons= revision and enable
+  =default_linemode devicons=;
+- retain nsxiv for images and Brave for HTML;
+- add =mpv= for audio/video;
+- add ZIP list/extract behavior using =unzip=;
+- do not add speculative PDF, office, ebook, game, Wine or archive programs.
+
+** Bluetooth media proxy
+Enable BlueZ's shipped =mpris-proxy.service= under the graphical DWM user
+session.  Do not create or override its =ExecStart=.
+
+** Emacs configuration ownership
+- copy the clean MSI Emacs configuration into the Home Manager/store closure;
+- do not use an out-of-store link or require a repository clone on T480s;
+- retain its functional package configuration, theme, Evil behavior,
+  completion, project navigation, Magit, Org/notes, keybindings and daemon;
+- adapt vterm and visual-shell ownership from MSI Zsh to T480s Fish;
+- remove QML, Quickshell, UWSM, Hyprland and Wayland assumptions from the
+  T480s copy without changing MSI's repository or behavior;
+- supply =emacs-sync= and the native build tools required for vterm.
+
+** Emacs runtime tools
+Core and native build:
+
+- =emacs-pgtk=, Bash, coreutils, findutils, Perl;
+- CMake, GNU Make, GCC, libtool, autoconf, automake and pkg-config;
+- Git, ripgrep, fd, editorconfig and tree-sitter;
+- SQLite, GnuTLS, zstd and unzip when required by the retained configuration.
+
+Approved language capabilities:
+
+- Nix: =nixd= and =nixfmt=;
+- shell: =shellcheck= and =shfmt=;
+- C/C++: =clang-tools=;
+- Python: =basedpyright=, =pipenv=, =black=, =ruff=, =pyflakes= and =pytest=;
+- Rust: =rust-analyzer=, =rustc=, =cargo= and =rustfmt=;
+- JavaScript/TypeScript/web: Node.js, TypeScript,
+  =typescript-language-server=, Prettier, HTML Tidy, Stylelint,
+  =jsbeautifier=, extracted web language servers and YAML language server;
+- Lua: Lua, Lua language server and Stylua;
+- Markdown/Org writing: Marksman, Pandoc, English Aspell and Harper.
+
+Tree-sitter grammars:
+
+- Bash, C, C++, CSS, HTML, JavaScript, JSON, Lua, Markdown,
+  Markdown-inline, Nix, Org, Python, Rust, TOML, TSX, TypeScript and YAML.
+
+Explicitly exclude from the T480s Emacs runtime:
+
+- QML/QMLJS grammar, =qmlls=, Qt language servers/imports and Quickshell;
+- GLSL tools;
+- Haskell compiler, language server, Cabal and Hoogle;
+- TeX Live and ImageMagick unless separately approved later;
+- Ledger unless separately approved later;
+- Neovim executable and Neovim runtime data;
+- VS Code and Codex.
+
+* Existing User Configuration To Preserve
+- exact DWM, dmenu and slstatus configuration;
+- Fish tty1 =startx= and tmux workflow;
+- =xclip= clipboard ownership;
+- Brave managed policy and MIME defaults;
+- Ghostty configured for Fish, DWM and Iosevka;
+- fastfetch greeting;
+- Xresources values and selected wallpaper source.
+
+* Reviewer Values Still Required
+All previously unresolved reviewer values are supplied:
+
+1. Preserve the exact selected T430 wallpaper and Xresources colors.  Adapt
+   only display fitting through the existing =xwallpaper --zoom= behavior.
+2. Configure Git name =Rafael Oliveira= and email =r0liveira@icloud.com= with
+   no commit signing.  This matches the existing MSI and T480s repository-local
+   identity; no fleet-wide signing policy was found.
+
+* Excluded And Deferred
+- No backup automation.
+- All surfaces checked in section 3 of the review form stay out.
+- Fingerprint PAM and browser/app passkeys remain requested objectives, but
+  their driver, PAM targets, fallback policy and authenticator design require a
+  separate exact proposal before source changes.
+- XLibre and kernel specialization remain deferred.
+
+* Next Gate
+Review the realized dependency graph.  Transfer and activation remain separate
+authorization gates; neither is implied by the successful build.

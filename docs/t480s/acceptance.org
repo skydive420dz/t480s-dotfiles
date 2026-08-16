@@ -1,0 +1,54 @@
+#+title: T480s Acceptance Checklist
+#+startup: overview
+
+* Build Evidence
+- [ ] Exact =nixosConfigurations.t480s= build command exits successfully.
+- [ ] Toplevel store path recorded.
+- [ ] =flake.lock= matches the authorized baseline; no absent lockfile was
+  silently generated.
+- [ ] No activation or result link occurred.
+
+* Installation And Boot
+- [ ] Generated hardware configuration reviewed against mounted storage.
+- [ ] ESP, Btrfs, swap, initrd and resume identities agree.
+- [ ] Normal NixOS kernel and systemd-boot entries installed.
+- [ ] Recovery USB and known-good rollback path retained.
+- [ ] New generation boots and reports the intended kernel/command line.
+- [ ] Rollback entry boots successfully.
+
+* Service Health
+- [ ] No unexplained failed system units.
+- [ ] No unexplained failed user units.
+- [ ] NetworkManager and OpenSSH healthy.
+- [ ] PipeWire and WirePlumber healthy.
+- [ ] BlueZ and =mpris-proxy= healthy.
+- [ ] TLP healthy and BAT0 thresholds report 75/90.
+- [ ] UPower reports the intended fail-closed action.
+- [ ] Startx creates the expected user D-Bus/systemd session.
+
+* Physical Acceptance
+- [ ] Wi-Fi association, traffic, suspend and resume.
+- [ ] Bluetooth pairing, audio profile and media controls.
+- [ ] Speakers, headphones and microphone.
+- [ ] Brightness keys.
+- [ ] Volume and microphone keys.
+- [ ] Caps Lock maps to Escape.
+- [ ] Natural scrolling and keyboard repeat rate.
+- [ ] Internal display and wallpaper.
+- [ ] External display modes and each =display-profile= action.
+- [ ] Deep suspend and wake.
+- [ ] Lid-close hybrid sleep.
+- [ ] Controlled hibernate and resume.
+- [ ] Critical-battery protection using a safe test threshold.
+- [ ] Brave policy and normal browsing.
+- [ ] Emacs graphical and terminal workflows.
+- [ ] DWM tags, layouts, focus, rules, launcher and status.
+- [ ] =Super+e= opens a graphical Emacs client frame.
+- [ ] =Super+t= selects the original tiled layout.
+- [ ] Ghostty, Fish and tmux.
+- [ ] Ranger opens images in nsxiv.
+
+Only after controlled hibernation and resume pass may
+=services.upower.criticalPowerAction= change from =PowerOff= to =Hibernate=.
+The explicit terminal substitution makes Ghostty/tmux, not =st=/tmux, the
+acceptance target.

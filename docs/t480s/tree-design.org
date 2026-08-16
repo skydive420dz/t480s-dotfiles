@@ -1,0 +1,316 @@
+#+title: T480s Repository Ownership and Tree Design
+#+startup: overview
+
+* Status
+
+This document defines the approved ownership map and sanitation rules.  The
+current T480s source is the standalone baseline recorded as one parentless root
+commit on =main=; no inherited foreign-host commit is an ancestor.
+
+Mechanical organization and index reconciliation have occurred.  The
+completed source slice revised and placed only content whose disposition was
+explicitly approved.  Later build, temporary test-activation and root-commit
+results are recorded in the gate ledger; they do not decide dormant candidates
+or authorize persistent promotion, reboot, physical acceptance or push.
+
+* Design goals
+
+- Make ownership and scope visible from the path.
+- Separate live-editable application configuration from Nix modules.
+- Separate machine-agnostic policy from T480s-specific facts.
+- Separate user configuration from global system configuration.
+- Reuse mechanically useful content only after foreign-host assumptions are
+  identified and revised.
+- Never infer that an unimported, unfamiliar, or apparently unnecessary file is
+  unwanted.
+
+* Approved ownership map
+
+#+begin_example
+t480s-dotfiles/
+|-- flake.nix
+|-- README.org
+|-- config/
+|   `-- <application-or-runtime-owner>/
+|-- core/
+|   |-- home/
+|   |   |-- default.nix
+|   |   `-- modules/
+|   |       |-- packages/
+|   |       |-- scripts/
+|   |       `-- services/
+|   `-- system/
+|       |-- default.nix
+|       `-- modules/
+|           |-- packages/
+|           |-- scripts/
+|           `-- services/
+|-- host/
+|   `-- t480s/
+|       |-- home/
+|       |   |-- default.nix
+|       |   `-- modules/
+|       |       |-- packages/
+|       |       |-- scripts/
+|       |       `-- services/
+|       `-- system/
+|           |-- default.nix
+|           |-- hardware-configuration.nix
+|           `-- modules/
+|               |-- packages/
+|               |-- scripts/
+|               `-- services/
+`-- docs/
+    `-- t480s/
+#+end_example
+
+Directories use lowercase names. Empty directories are not created merely to
+match the diagram.
+
+* Ownership boundaries
+
+** =config/=
+
+Application-native and runtime configuration intended to be editable outside
+the Nix store. Nix or Home Manager may link these sources into the user's home.
+
+A change here does not require a Nix rebuild, but an application may still need
+to reload its configuration or restart. Each subdirectory is owned by the
+application or runtime named in its path.
+
+Scripts belong here when they are intentionally live-editable and owned by an
+application or desktop workflow.
+
+The approved live-linked set includes Emacs, Fish, Ghostty, Ranger, tmux,
+Xresources and the display-profile script.  Ghostty's shader directory is
+linked but no shader is enabled by this ownership rule.  Wallpaper is also
+source-owned here.  DWM, dmenu and slstatus headers remain compile-time
+exceptions because their packages consume the headers while building.
+
+** =core/home/=
+
+Machine-agnostic Home Manager configuration: portable user packages, user
+services, program integration, and user-owned scripts.
+
+It must not contain T480s hardware identifiers, MSI assumptions, display output
+names, device paths, or host-specific power and boot policy.
+
+** =core/system/=
+
+Machine-agnostic NixOS configuration: global packages, services, security
+policy, networking behavior, fonts, audio foundations, and other reusable
+system policy.
+
+It must not import from =host/=.
+
+** =host/t480s/home/=
+
+T480s-specific user and session behavior. It may import =core/home= and adapt
+portable behavior for this host.
+
+** =host/t480s/system/=
+
+T480s hardware and global host policy, including boot, filesystems, resume,
+power, input devices, firmware, display behavior, and hardware-generated facts.
+It may import =core/system=.
+
+** =modules/packages/=
+
+Owns package selection and package-specific enablement. A package must have a
+documented behavior or consumer; presence on another machine is not sufficient.
+
+** =modules/services/=
+
+Owns systemd system or user services and their dependencies, ordering,
+permissions, and lifecycle.
+
+** =modules/scripts/=
+
+Contains scripts installed or packaged by Nix. Live-editable scripts instead
+belong below =config/= with their runtime owner. Scripts are not placed here
+solely to fill the proposed hierarchy.
+
+* Import direction
+
+#+begin_example
+flake.nix
+`-- host/t480s/system/default.nix
+    |-- core/system
+    |-- host/t480s/system/modules
+    `-- Home Manager
+        `-- host/t480s/home/default.nix
+            |-- core/home
+            `-- host/t480s/home/modules
+#+end_example
+
+Allowed direction is host to core. Core must never import host configuration.
+Application-native =config/= files do not import Nix modules; Nix modules link,
+package, or reference them.
+
+* Active import map after sanitation
+
+The approved source graph is:
+
+#+begin_example
+flake.nix
+`-- host/t480s/system/default.nix
+    |-- hardware-configuration.nix
+    |-- core/system/default.nix
+    |   |-- services/{audio,networking,power}.nix
+    |   `-- packages/{default,brave,fonts}.nix
+    |-- inline access: user/groups/SSH/sudo/Fish shell
+    |-- modules/services/{boot,hardware,power,x11}.nix
+    `-- Home Manager
+        `-- host/t480s/home/default.nix
+            `-- core/home/default.nix
+                |-- links.nix
+                |-- packages/{bat,brave,btop,emacs,fastfetch,fish,fzf,
+                |             ghostty,git,ranger}.nix
+                |-- packages/tmux/default.nix -> tmux.nix
+                `-- services/{emacs,mpris-proxy}.nix
+#+end_example
+
+Live links owned by that graph are:
+
+| Home target | Repository source |
+|-------------+-------------------|
+| =~/.config/emacs= | =config/emacs/= |
+| =~/.config/fish/conf.d/t480s.fish= | =config/fish/conf.d/t480s.fish= |
+| =~/.config/ghostty/config= | =config/ghostty/config= |
+| =~/.config/ghostty/shaders= | =config/ghostty/shaders/= |
+| =~/.config/ranger/rc.conf= | =config/ranger/rc.conf= |
+| =~/.config/ranger/rifle.conf= | =config/ranger/rifle.conf= |
+| =~/.config/tmux/t480s.conf= | =config/tmux/t480s.conf= |
+| =~/.Xresources= | =config/x11/Xresources= |
+| =~/.local/bin/display-profile= | =config/x11/display-profile= |
+
+This is a source map.  It is not build or activation evidence.
+
+* Current source and active system
+
+The two states must not be conflated:
+
+| State | Evidence |
+|-------+----------|
+| Active runtime system | =/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2= |
+| Persistent system profile | =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e= |
+| Booted fallback | =/nix/store/a1rglfnj8fpql25w301v5xwk05qvw266-nixos-system-t480s-26.11.20260729.0954f7e= |
+| Active runtime health | =running= with no failed system or user units at the 2026-08-15 verification point |
+| Repository baseline | Standalone parentless root tree on =main= |
+| Functional-source proof | Static checks, exact non-activating build and temporary test activation passed |
+| Pending deployment | DWM/X11 restart/acceptance, persistent promotion, reboot and push |
+
+The repository baseline passed static checks, an exact build and temporary test
+activation as =74891x1h...=.  The existing X11 session still runs the prior
+DWM 6.6 binary, so =Super+e= awaits DWM/X11 restart and acceptance.
+
+The historical Gate 5B build remains evidence for its own reviewed source.  Its
+store-backed Emacs clause is superseded by the approved live =config/emacs/=
+ownership and does not prove anything about the current working source.
+
+* Sanitization inventory
+
+Each retained or moved path receives one disposition:
+
+| Status | Meaning |
+|--------+---------|
+| =keep= | Correct owner, scope, and contents |
+| =move= | Useful and correct, but owned by a different proposed path |
+| =revise= | Useful, but contains foreign-machine or foreign-system assumptions |
+| =split= | Mixes machine-agnostic and host-specific responsibilities |
+| =remove= | Matches an exclusion explicitly selected by the user |
+| =unknown= | Requires a user decision before any mutation |
+
+The inventory records:
+
+| Field | Purpose |
+|-------+---------|
+| Current path | Existing source location |
+| Proposed owner | Config, core home/system, or host home/system |
+| Proposed destination | Candidate path; not authorization to move |
+| Status | One disposition from the table above |
+| Consumers | Imports, links, services, applications, or scripts using it |
+| Runtime/build owner | Live editable, Home Manager, or NixOS |
+| Foreign references | MSI, T430, Wayland, QML, device, path, or user assumptions |
+| Required revision | Mechanical adaptation needed for T480s |
+| User decision | Approval, rejection, defer, or unresolved |
+| Observations | Evidence and constraints |
+
+* Review rules
+
+1. Inventory and analyze before editing.
+2. Preserve manually changed files and distinguish them from prior automated
+   changes.
+3. Treat useful content as =revise= or =split=, not as automatically approved.
+4. Remove only content explicitly excluded by the user.
+5. Do not classify a package, service, or configuration as unnecessary on the
+   user's behalf.
+6. Verify every move by finding all imports, path references, links, runtime
+   consumers, and documentation references.
+7. Keep evaluation, build, activation, reboot, acceptance, commit, history
+   replacement, and push as separate authorization gates.
+8. Do not regenerate =flake.lock= or generated hardware configuration during
+   tree sanitization unless separately authorized.
+9. Do not access or modify MSI while working on this repository.
+10. Stop on unexplained drift or ambiguous ownership and mark the item
+    =unknown=.
+
+* Sanitization authorization record
+
+The completed sanitation slice on the T480s checkout authorized only:
+
+- audit imports, links, consumers and foreign assumptions;
+- perform already approved source moves, splits and revisions;
+- keep live application configuration under =config/=;
+- keep reusable policy under =core/= and T480s facts under =host/t480s/=;
+- update the T480s documentation;
+- remove the unconsumed Ponytail flake input;
+- run source-only parse, syntax, reference and whitespace checks;
+- reconcile the complete approved tree into the Git index.
+
+Not authorized in that slice:
+
+- access or modification of the MSI repository or system;
+- a new user decision for any dormant or ambiguous candidate;
+- =flake.lock= regeneration or hardware-configuration regeneration;
+- Nix evaluation, build, installation, import, activation or profile change;
+- reboot, service/physical acceptance, commit, history rewrite or push.
+
+Subsequent build, temporary test-activation and root-commit results are recorded
+in [[file:gates.org][the gate ledger]].  Push remains unauthorized.
+
+* Unresolved candidates
+
+These remain visible for later user disposition; their presence is not
+approval to import, enable, delete or rewrite them:
+
+- dormant Home Manager candidates:
+  =core/home/modules/packages/gnupg.nix=,
+  =core/home/modules/packages/tmux/sessions.nix=,
+  and =core/home/modules/services/removable-media.nix=;
+- dormant system candidates: =core/system/modules/packages/candidates.nix=,
+  =core/system/modules/services/input.nix= and
+  =core/system/modules/services/removable-media.nix=;
+- the structural split of user/groups/SSH/sudo/Fish-shell access policy out of
+  the host root; behavior remains inline and unchanged pending separate exact
+  review;
+- DWM/X11 session restart and =Super+e= acceptance; the source builds DWM 6.8
+  while the existing session still runs DWM 6.6;
+- fingerprint hardware support, PAM enrollment and browser/app passkey design
+  as separate security decisions;
+- external-display connector/mode calibration and the remaining physical
+  acceptance checklist;
+- XLibre, a host-specific/ThinLTO kernel, backup destination/automation and the
+  critical-battery change to hibernate as later independent gates.
+
+* Sanitization sequence
+
+1. Preserve the verified branch, source attribution and recovery snapshot.
+2. Trace every active import, link and runtime consumer.
+3. Apply only the already approved source ownership and sanitation decisions.
+4. Leave dormant or ambiguous candidates unimported and list them explicitly.
+5. Validate source syntax, references and whitespace without evaluating,
+   building or activating.
+6. Present the resulting tree, exact diff and unresolved candidates.
+7. Request separate authorization for evaluation/build, then later deployment
+   and version-control actions.

@@ -1,0 +1,355 @@
+#+title: T480s Authorization Gates
+#+startup: overview
+
+* Rule
+Each gate requires separate authorization.  Success at one gate does not imply
+authorization or success at the next.  Stop on repository, hardware, storage,
+lockfile, generated-output, or live-state drift.
+
+This ledger preserves completed historical results.  It also records the
+current source-sanitation slice separately.  A completed older build or
+activation is not evidence for later source bytes.
+
+* Gate 0 - Read-only Assessment
+Status: complete.
+
+Produced the live/repository drift report, translation map, module graph,
+hardware inventory, ownership graph, and staged acceptance plan.  No mutation.
+
+* Gate 1 - Source Implementation
+Historical status: complete on =work/t480s-bootstrap=; then uncommitted and
+unbuilt.
+
+Completed source, documentation, format, shell, and diff checks.  No flake
+evaluation, build, hardware generation, installation, activation, reboot,
+commit, or push occurred.
+
+That result was superseded by the later T480s sanitation, build, activation
+and root-baseline work recorded below.
+
+* Gate 2 - Non-activating Build
+Status: complete 2026-08-13; no activation occurred.
+
+#+begin_src sh
+nix --extra-experimental-features 'nix-command flakes' \
+  build --print-out-paths \
+  '.#nixosConfigurations."t480s".config.system.build.toplevel' \
+  --no-link --no-write-lock-file --show-trace
+#+end_src
+
+The exact command evaluated and realized:
+
+#+begin_example
+/nix/store/a1rglfnj8fpql25w301v5xwk05qvw266-nixos-system-t480s-26.11.20260729.0954f7e
+#+end_example
+
+The closure is 7.8 GiB and uses the stock NixOS Linux 6.18.40 kernel.  A second
+exact build after replacing deprecated =xorg.xrandr/xset/xrdb= aliases was
+warning-clean and returned the same toplevel.  This proves evaluation and
+realization only; it does not prove installation, boot, services, hardware, or
+desktop behavior.
+
+* Gate 3 - Storage And Installation
+Status: Gate 3A and Gate 3B complete 2026-08-13; no reboot occurred.
+
+Before mutation, show the exact NVMe identity, proposed partition boundaries,
+filesystems, swap/resume design, mounts, and recovery media.  After mounting,
+generate and review =host/t480s/system/hardware-configuration.nix=.  Install without
+rebooting, set the user password interactively without storing it in Git, then
+inspect boot entries and fallback access.
+
+This gate is split into separate results:
+
+1. Gate 3A completed: the verified NVMe was partitioned, formatted, mounted,
+   and the real hardware module generated and reviewed;
+2. next, return to the non-activating Gate 2 build and inspect the result;
+3. only then authorize =nixos-install= as Gate 3B.
+
+Gate 3A created:
+
+| Partition | Purpose | Identity |
+|-----------+---------+----------|
+| =nvme0n1p1= | 1 GiB FAT32 ESP at =/boot= | =878D-A749= |
+| =nvme0n1p2= | 32 GiB swap/resume | =28d5c812-d3e4-4ba2-8cd0-535a35162ab6= |
+| =nvme0n1p3= | Btrfs =@root= and =@home= | =995d2695-879e-4577-aaaf-9fed26eed6f4= |
+
+Gate 3B installed the exact Gate 2 toplevel as generation 1.  systemd-boot
+created =Linux Boot Manager= and =Fallback Linux Boot Manager= EFI entries,
+and the user password was set interactively without entering source or logs.
+The Gentoo recovery USB remains =/dev/sda= and the running live system.
+
+* Gate 4 - First Reboot
+Status: complete 2026-08-13.
+
+Record the installed toplevel, firmware entry, swap/resume identity, recovery
+USB, and rollback route.  Reboot only with physical console access.
+
+* Gate 5 - Boot And Service Health
+Status: inspection complete 2026-08-13; one source defect found.
+
+Verify generation and boot identity, filesystems, failed units, NetworkManager,
+SSH, audio, Bluetooth, TLP, UPower, X/startx ownership, journals, and rollback
+entry.  This is not physical acceptance.
+
+The exact generation booted with Linux 6.18.40 and the intended root, home,
+ESP, swap, and resume identities.  The system state was =running= with no
+failed system or user units.  NetworkManager, SSH, Bluetooth, TLP, UPower, and
+D-Bus were active; PipeWire and WirePlumber exposed built-in audio sink/source.
+Battery thresholds were 75/90 and the AC profile was active.
+
+The original host declared =mpris-proxy.service= even though BlueZ already
+ships that unit.  The resulting drop-in added a second =ExecStart=, so systemd
+marked the unit =bad-setting=.  The redundant declaration was removed and the
+corrected toplevel built as
+=/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e=.
+It contains only BlueZ's unit with one =ExecStart=.  The corrected generation
+was activated and verified =loaded= with system state =running=.  The native
+unit is disabled/inactive, so enable-only declarative ownership remains to
+preserve Bluetooth media controls.  Kitty-originated interactive SSH also
+requires the small =kitty.terminfo= package; the Kitty application is not
+required.
+
+* Gate 5B - Approved Completeness Source
+Historical status: source and non-activating build complete 2026-08-13; not
+activated.
+
+The checked review form authorized only the source diff recorded in
+[[file:gate-5b-source-proposal.org][the exact proposal]].  The implementation adds
+the approved system tools and restricted power commands, the selected user
+tools and Ranger behavior, enable-only ownership for BlueZ's native proxy, and
+a store-backed T480s adaptation of the clean MSI Emacs configuration.  It does
+not add fingerprint support, backup automation, QML/Quickshell, XLibre or a
+custom kernel.
+
+Source parsing, formatting and whitespace checks passed.  The authorized
+warning-clean build realized:
+
+#+begin_example
+/nix/store/a86l514b3w24klc7jy09wj3cv46vy263-nixos-system-t480s-26.11.20260729.0954f7e
+#+end_example
+
+Its closure is 10.2 GiB and the lockfile remained unchanged.  The realized
+Emacs tree contains the retained clean modules with Fish-owned vterm and no
+QML, Quickshell, UWSM, Neovim, GLSL, Haskell or Ledger settings.  Ghostty's own
+transitive closure includes =glslang=; this is a required Ghostty dependency,
+not the excluded Emacs GLSL toolchain.  Gate 5C subsequently completed transfer;
+at that checkpoint activation remained unauthorized.
+
+This remains factual evidence for that exact candidate only.  The newer
+approved ownership makes =config/emacs/= live-editable outside the store, so
+the historical store-backed Emacs clause in the Gate 5B proposal is
+superseded.  At that Gate 5B checkpoint, the then-current working source had no
+evaluation or build result.  Its lockfile state must not be confused with the
+intentionally absent =flake.lock= of the later source.
+
+* Gate 5C - Transfer Without Activation
+Status: complete 2026-08-13; not imported or activated.
+
+Direct =nix copy= reached the target but registration was rejected because the
+MSI-built paths are not signed by a key trusted by the T480s daemon.  Trust
+policy was not weakened.  The exact closure was exported instead to the private
+target artifact:
+
+#+begin_example
+/home/skydive420dz/t480s-gate5b-a86l514b.nar.zst
+#+end_example
+
+The file is mode =0600=, 4,150,763,393 bytes, and passed =zstd -t=.  Its SHA-256
+is =90791a5a3de0ae39e20b3ab8e07c70c1674190c82f0f6e6375055d68d97b6873=.
+The target remained on
+=/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e=.
+Privileged import, profile change, activation and reboot remain unauthorized.
+
+* 2026-08-14 Source And Replacement-Build Slice
+Status: complete on 2026-08-14; evaluated and built, not activated at that
+checkpoint.
+
+Verified checkout state:
+
+| Item | Value |
+|------+-------|
+| Host checkout | =/home/skydive420dz/Projects/t480s-dotfiles= |
+| Branch | =main= |
+| HEAD | =3d96cc40e9b1ba1ec3385245862ee13e45f3dfdd= |
+| Worktree | Dirty, fully staged and uncommitted |
+| Lockfile | Absent; regeneration unauthorized |
+| Active system/profile | =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e= |
+
+Completed work was limited to the T480s source: consumers were traced, already
+approved files were sanitized into the =config/core/host= ownership map,
+documentation was updated, and static source checks were performed.  MSI was
+not accessed or modified.
+
+Results: all 38 Nix files parse and pass =nixfmt --check=; Fish and the display
+script parse; all 27 Emacs Lisp files read; active imports, links and exclusion
+scans pass; =git diff --check= and =git diff --cached --check= pass; the
+lockfile remains absent.  Ranger matches T430 with the approved Brave
+substitution.  The active generation and system profile remain unchanged and
+=systemctl is-system-running= reports =running= with no failed system units.
+
+The unused Ponytail input was removed and the complete approved sanitation
+tree was reconciled into the Git index.  No unstaged or untracked paths remain,
+so the required =.#...= Git-flake build sees the complete candidate.
+
+The first current-source build realized
+=/nix/store/qld2qxc5kvzp4j6ddz3r2dkbm25ngic0-nixos-system-t480s-26.11.20260813.0e251e2=
+with exit zero, no result link and no lockfile write.  Pre-activation inspection
+rejected it: the Home Manager =mpris-proxy= wants link used
+=${pkgs.bluez}/share/systemd/user/mpris-proxy.service=, which does not exist in
+BlueZ 5.87.
+
+The approved T430-to-T480s adaptation changed only =share= to =etc=.  The
+replacement build realized:
+
+#+begin_example
+/nix/store/d39b1zd7qkkf4czdgna6c0frh4kc09az-nixos-system-t480s-26.11.20260813.0e251e2
+#+end_example
+
+Its native BlueZ unit resolves to
+=/nix/store/wbv6jwxq9ay99jwx1sagxcgwrd10wk9f-bluez-5.87/etc/systemd/user/mpris-proxy.service=,
+the unit verifies with manual-page checks disabled, and all candidate Home
+Manager links resolve.  The package closure is otherwise unchanged.  The
+running system/profile remains the prior =dz6wmbd...= generation, healthy with
+no failed system units.
+
+A read-only =nix-store -q --roots= query unexpectedly triggered Nix's automatic
+cleanup of two stale auto-GC-root links and five stale temporary-root files.
+It did not alter either candidate, the system profile, boot entries, repository,
+services or running system.
+
+At the end of that 2026-08-14 slice, =flake.lock= or hardware regeneration,
+installation, import, activation, profile change, reboot, physical acceptance,
+commit, history rewrite and push were not authorized.
+
+* Emacs Repair Gate
+Status: source/static repair, existing Package.el/vterm bootstrap, the
+non-activating Nix build, temporary test activation and daemon runtime checks
+completed on 2026-08-15.  Within this gate, no persistent profile change,
+reboot, cache quarantine, commit or push occurred or is implied.
+
+This gate retains Package.el plus =emacs-sync= and repairs only the approved
+T480s adaptation: Ledger, TeX Live Small, ImageMagick, All The Icons fonts and
+generated Eshell aliases are restored; =emacs-gtk= remains the X11 build; no
+Emacs desktop entry is added; GLSL, QML, Haskell, Lazygit and Yazi remain
+excluded.
+
+Record these as separate results: (1) source/static validation, (2) Package.el
+installation and vterm module bootstrap, (3) non-activating Nix build, (4)
+candidate activation, (5) daemon restart and runtime acceptance, and (6) later
+quarantine of excluded ELPA cache residue.  Success at one does not establish
+or authorize the next.
+
+Measured results: all 38 Nix files parse and format-check; all 28 Emacs Lisp
+files read and pass =check-parens=; Git has zero unstaged or untracked files;
+the build-input staged-diff SHA-256 is
+=40828ff88fe01c1d2b3621206b8e1f727759300f8d5d4fce7a2e6ab9e8d8a9a8=.
+The cache was reflink-copied to
+=~/.cache/emacs.before-repair-20260815= before mutation.  Package.el refreshed,
+Magit =20260815.1852= and Ledger mode =20260727.518= installed, the vterm
+=20260730.1414= native module built, and the final batch verification exited
+zero.  An initial tmux wrapper-path typo exited =127= before cache or package
+mutation; the corrected command in the same logged session completed.
+
+The exact =--no-link --no-write-lock-file= build exited zero and realized:
+
+#+begin_example
+/nix/store/vwnm1y20943v5vqa96404mkhbq4zdnqg-nixos-system-t480s-26.11.20260813.0e251e2
+#+end_example
+
+Its closure contains 1,944 paths and reports 10.6 GiB.  The unlocked inputs
+resolved to nixpkgs =0e251e24a4f24e036a084b6b4b2d2491af4167f4= and Home
+Manager =c8058ecc1329a71a3c99c4d0353dba4009a66152=.  No lockfile or
+=result= link was written.
+
+Read-only artifact checks found Ledger 3.4.1, ImageMagick 7.1.2-29, TeX Live
+2025, All The Icons fonts 5.0.0, =emacs-gtk= 30.2, the generated 11-entry
+Eshell alias file and the refreshed =emacs-sync= wrapper.  The generated Emacs
+unit verifies; candidate =/etc= and Home Manager files contain no dangling
+links; the enumerated excluded closure names are absent.
+
+The exact candidate was then activated with =switch-to-configuration test= in
+the =t480s-activate-emacs-repair= tmux session and exited zero.  The resulting
+generation identities are:
+
+| Role | Store path |
+|------+------------|
+| Running | =/nix/store/vwnm1y20943v5vqa96404mkhbq4zdnqg-nixos-system-t480s-26.11.20260813.0e251e2= |
+| Persistent profile | =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e= |
+| Booted fallback | =/nix/store/a1rglfnj8fpql25w301v5xwk05qvw266-nixos-system-t480s-26.11.20260729.0954f7e= |
+
+The running kernel remains 6.18.40, as expected without a reboot.  System and
+user managers report =running= with no failed units; SSH, NetworkManager,
+Wi-Fi and =mpris-proxy= remain healthy.  The prior runtime and both persistent
+fallback switch tools remain present.
+
+Home Manager restarted Emacs as predicted: PID =146045= became =169304= and
+the replacement unit is active with =Result=success=, zero restarts and
+=init-file-had-error=nil=.  Batch verification loaded Magit, vterm and Ledger
+mode.  Post-activation checks found their commands and providers, the vterm
+native module and Ledger executable, all 11 generated Eshell aliases,
+ImageMagick, TeX Live and all six All The Icons font files.  Fontconfig resolves
+Iosevka Term; actual frame rendering remains physical acceptance.  The GTK/X11
+daemon warning remains expected for the explicitly retained =emacs-gtk= build;
+it is not a PGTK or configuration-load failure.
+
+Physical keybinding, icon rendering and interactive Magit/vterm/Ledger
+acceptance remain user checks.  Persistent profile promotion, reboot, cache
+quarantine and push remain separate.  The later root commit is recorded in
+Gate 8.
+
+* DWM Emacs Launcher Source Gate
+Status: source change, non-activating build and temporary test activation
+completed on 2026-08-15; DWM/X11 restart not performed.
+
+The user authorized =Super+e= to open Emacs only after confirming that key was
+unbound, and requested restoration of =Super+t=.  Read-only comparison showed
+that both the then-base source and candidate header already retained the
+original =Super+t= tiled-layout action, so that binding was left unchanged.
+
+The only functional additions are an =emacsclient -c -a emacs= command array
+and a =MODKEY + XK_e= spawn entry in =config/dwm/dwm.h=.  =emacsclient= is
+present in the user profile, the staged diff passes whitespace checks, and no
+other DWM binding changed.
+
+The build input staged-diff SHA-256 was
+=cd409c1bfadcaaa229f429e8fcd7357f9da6b92313c8fed473bac93ab2c9eacc=.
+The exact =--no-link --no-write-lock-file= command exited zero in tmux session
+=t480s-build-dwm-emacs= and realized:
+
+#+begin_example
+/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2
+#+end_example
+
+The closure remains 1,944 paths and 10.6 GiB.  DWM changed from
+=pzxwp9j0800gbgpzbpfkjdjimvnz7yv1-dwm-6.8= to
+=90fl64ijz3znlrzqiggyy9w04qdc0741-dwm-6.8=; their executable hashes differ,
+and the replacement binary contains =emacsclient=, =-c=, =-a= and =emacs=.
+No =flake.lock= or =result= was written.
+
+The exact candidate was then activated with =switch-to-configuration test=.
+=/run/current-system= now points to =74891x1h...=; the persistent profile and
+booted fallback remain unchanged.  System and user managers are running with
+no failed units, and SSH, NetworkManager, Wi-Fi, Home Manager, Emacs and
+=mpris-proxy= remain healthy.  The existing X11 session still runs the prior
+DWM 6.6 binary, so =Super+e= is not active until the separately authorized
+DWM/X11 restart and acceptance gate.
+
+* Gate 6 - Physical Acceptance
+Status: not authorized.
+
+Execute [[file:acceptance.org][the physical acceptance checklist]].  Controlled
+hibernate/resume must pass before changing the critical action to hibernate.
+
+* Gate 7 - Optional Experiments
+Status: not authorized.
+
+XLibre, a host-specific kernel, ThinLTO, CPU targeting, service optimization,
+and backup automation are independent, measurement-driven projects after the
+baseline is accepted.  Each retains the accepted Xorg/kernel generation.
+
+* Gate 8 - Initial Commit And Push
+Status: standalone local root commit complete 2026-08-15; push not authorized.
+
+The current intended T480s tree is recorded as one parentless root commit; none
+of the 658 inherited commits is an ancestor.  Replacing =origin/main= remains a
+separate, unauthorized action.

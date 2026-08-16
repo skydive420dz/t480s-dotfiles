@@ -1,0 +1,86 @@
+#+title: T480s Gate 5B Short Review Form
+#+startup: overview
+
+* Historical Status
+This completed form records the Gate 5B decisions.  It is not a current
+authorization form.  The later source-sanitation decision keeps application
+configuration, including Emacs, live under =config/=; see
+[[file:tree-design.org][the current ownership map]].
+
+* Instructions
+Mark the user-visible capabilities you want.  Add revisions in the notes
+column.  Supporting packages are derived from approved capabilities and listed
+in [[file:gate-5b-inventory-details.org][the technical appendix]] before any build.
+
+Returning this form does not authorize activation, reboot, commit, or push.
+
+* 1. Core T430-Style Machine
+| Capability | Proposal | Decision | Notes / revision |
+|------------+----------+----------+------------------|
+| DWM, dmenu and slstatus | Keep exact saved behavior | [x] Keep [ ] Revise [ ] Remove | |
+| Wallpaper and Xresources | Preserve T430 source, adapt for T480s | [ ] Keep [x] Revise [ ] Remove | Preserve exact wallpaper/colors; fit wallpaper with =xwallpaper --zoom= |
+| Fish, tmux and fastfetch terminal workflow | Keep | [x] Keep [ ] Revise [ ] Remove | |
+| Ranger, devicons and nsxiv image opening | Keep | [x] Keep [ ] Revise [ ] Remove | |
+| btop | Add | [x] Add [ ] Skip | |
+| Audio controls such as =amixer= and =alsamixer= | Add | [x] Add [ ] Skip | |
+| Common ZIP archive handling | Add | [x] Add [ ] Skip | |
+| Kitty SSH compatibility, without installing Kitty | Add terminfo only | [x] Add [ ] Skip | |
+| =wget= | Add | [x] Add [ ] Skip | Explicit reviewer revision |
+| =jq= | Add | [x] Add [ ] Skip | Explicit reviewer revision |
+| =fzf= with Fish integration | Add | [x] Add [ ] Skip | Explicit reviewer revision |
+| =bat= | Add | [x] Add [ ] Skip | No =cat= alias chosen yet |
+| =mpv= | Add lean player with YouTube support disabled | [x] Add [ ] Skip | Ranger audio/video opener included |
+| =xclip= clipboard behavior | Keep | [x] Keep [ ] Revise | Explicit reviewer revision |
+| Native Bluetooth media controls | Enable BlueZ's existing proxy | [x] Enable [ ] Skip | |
+| Current Wi-Fi, SSH, audio, battery and power configuration | Keep | [x] Keep [ ] Revise | |
+| Git identity and everyday configuration | Configure | [x] Configure [ ] Leave unset | Rafael Oliveira; r0liveira@icloud.com; no commit signing |
+| T430-style restricted passwordless reboot/poweroff | Optional | [x] Add [ ] Skip | |
+| Backup automation | Omit | [x] Skip | Explicit reviewer exclusion |
+
+* 2. Approved Application Substitutions
+| Capability | Proposal | Decision | Notes / revision |
+|------------+----------+----------+------------------|
+| Brave replacing Firefox, including MSI policy and defaults | Keep | [x] Keep [ ] Revise [ ] Remove | |
+| Ghostty replacing =st=, adapted for Fish, DWM and Iosevka | Keep | [x] Keep [ ] Revise [ ] Remove | |
+| Clean MSI Emacs replacing Neovim | Repair and deploy as a self-contained configuration | [x] Keep [ ] Revise [ ] Remove | Complete functional configuration, not package only |
+| Emacs Nix editing | Include | [x] Include [ ] Skip | |
+| Emacs shell-script editing | Include | [x] Include [ ] Skip | |
+| Emacs C/C++ editing | Optional | [x] Include [ ] Skip | |
+| Emacs Python editing | Optional | [x] Include [ ] Skip | |
+| Emacs Rust editing | Optional | [x] Include [ ] Skip | |
+| Emacs JavaScript/TypeScript editing | Optional | [x] Include [ ] Skip | |
+| Emacs Lua editing | Optional | [x] Include [ ] Skip | |
+| Emacs Markdown/Org writing tools | Optional | [x] Include [ ] Skip | |
+| Other Emacs language/workflow | None by default | | Specify: |
+
+* 3. Keep Out Of The Baseline
+Mark any exception in the notes column.
+
+| Surface | Decision | Notes / exception |
+|---------+----------+-------------------|
+| Hyprland, Wayland session and UWSM | [x] Keep out | |
+| Quickshell and QML tooling | [x] Keep out | |
+| VS Code and Codex | [x] Keep out | |
+| Vesktop | [x] Keep out | |
+| Steam and gaming stack | [x] Keep out | |
+| NVIDIA/PRIME and MSI hardware rules | [x] Keep out | |
+| Razer and QMK tooling | [x] Keep out | |
+| Firefox, Neovim executable and =st= | [x] Keep out | |
+
+* 4. Later Experiments
+| Experiment | Proposal | Decision | Notes |
+|------------+----------+----------+-------|
+| Synaptics fingerprint login/sudo | Requested; isolate from baseline authentication | [x] Include later [ ] Reject | Exact driver/PAM proposal requires review |
+| Browser/platform passkeys | Requested separately from fingerprint PAM | [x] Include objective [ ] Reject | Authenticator choice unresolved |
+| XLibre | Test only after Xorg baseline acceptance | [x] Defer [ ] Reject | |
+| ThinLTO/custom kernel/CPU tuning | Measure after baseline acceptance | [x] Defer [ ] Reject | |
+
+* 5. Authorization
+- Reviewer: skydive420dz
+- Review date: 2026-08-13
+- General notes: Do not make unrecorded application, configuration, dependency,
+  service, authentication or behavior decisions for the reviewer.
+- [x] Prepare a source diff containing only the capabilities approved above.
+- [x] Present the derived dependency appendix and source diff before building.
+- [ ] Build remains separately authorized after review.
+- [ ] Activation, reboot, commit and push remain unauthorized.

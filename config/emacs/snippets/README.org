@@ -1,0 +1,5 @@
+#+title: T480s Emacs Snippets
+
+Custom Yasnippet definitions belong in major-mode-named subdirectories here.
+No custom snippet definitions are currently installed.  QML, Haskell and GLSL
+snippets are intentionally excluded.

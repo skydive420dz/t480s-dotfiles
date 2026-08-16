@@ -1,0 +1,77 @@
+#+title: T480s Emacs Configuration
+#+startup: overview
+
+* Purpose
+
+This is the complete Emacs configuration for the ThinkPad T480s.  Home Manager
+installs Emacs and its runtime tools, links this directory to =~/.config/emacs=,
+and starts the Emacs daemon with the graphical X11 session.
+
+The tracked source is the runtime source.  No build-time script deletes or
+rewrites Lisp files.
+
+* Startup
+
+- =early-init.el= owns early UI and package-startup defaults.
+- =init.el= establishes paths and loads the focused modules in =lisp/=.
+- =emacsclient= is the default terminal and graphical editor.
+- =emacs-sync= refreshes Package.el metadata, installs configured packages and
+  builds the vterm module.
+
+* Retained workflow
+
+The configuration provides:
+
+- Evil editing;
+- Corfu, Cape and Yasnippet completion;
+- Eglot and lsp-mode integration;
+- project navigation and Magit;
+- Ledger plain-text accounting;
+- Org, notes and agenda support;
+- Dired and DevDocs;
+- vterm and Eshell using Fish;
+- the static Sky theme, dashboard, tab line and window helpers;
+- a systemd user daemon managed with the graphical session.
+
+* Language support
+
+Home Manager supplies the selected tools for:
+
+- Nix;
+- shell scripts;
+- C and C++;
+- Python;
+- Rust;
+- JavaScript, TypeScript, HTML, CSS, JSON and YAML;
+- Lua;
+- Markdown, Org and prose checking.
+
+The corresponding Tree-sitter grammars are assembled by Nix and linked below
+=~/.cache/emacs/tree-sitter-grammars=.
+
+TeX Live Small and ImageMagick provide retained rich-document support.  The
+=snippets/= directory is kept for future language-specific Yasnippet content;
+it currently contains no snippet definitions.
+
+The package named =vscode-langservers-extracted= supplies standalone HTML, CSS
+and JSON language-server executables.  It does not install the VS Code editor.
+
+* Shell and terminal
+
+Nix exports =SK_EMACS_SHELL= to the Fish executable and generates the Eshell
+aliases from the shared shell-alias source.  vterm uses the Fish value and
+falls back to an executable Fish before using Emacs' default shell.
+
+Terminal buffers enter Evil insert state and retain the existing =C-h/j/k/l=
+navigation behavior shared with tmux.
+
+* Theme
+
+=sk-theme.el= owns one static Sky palette.  There is no external runtime theme
+state or generated theme file.
+
+* Source validation
+
+A source-only gate may read every Lisp form with an isolated =emacs --batch -Q=
+process.  Loading packages, running =emacs-sync=, starting the daemon, and
+testing a graphical client belong to later build and runtime gates.
