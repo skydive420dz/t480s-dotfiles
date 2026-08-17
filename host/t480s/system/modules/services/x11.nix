@@ -1,4 +1,9 @@
-{ pkgs, repoPath, ... }:
+{
+  lib,
+  pkgs,
+  repoPath,
+  ...
+}:
 
 let
   dwm = pkgs.dwm.override { conf = ../../../../../config/dwm/dwm.h; };
@@ -29,6 +34,15 @@ in
       '';
     };
   };
+
+  services.xserver.inputClassSections = lib.mkAfter [
+    ''
+      Identifier "T480s TrackPoint button scrolling"
+      MatchProduct "Elan TrackPoint"
+      Option "ScrollMethod" "button"
+      Option "ScrollButton" "2"
+    ''
+  ];
 
   services.libinput = {
     enable = true;

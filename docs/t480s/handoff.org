@@ -1,6 +1,56 @@
 #+title: T480s Bootstrap Handoff
 #+startup: overview
 
+* Generation 6 Journal Remediation Acceptance
+Generation 6 was built from base HEAD
+=8ef756086ecf88573596a4aa8e501b25a624d37b= with final source in:
+
+- =host/t480s/system/hardware-configuration.nix=;
+- =host/t480s/system/modules/services/x11.nix=;
+- =host/t480s/system/modules/services/power.nix=.
+
+The system derivation is
+=/nix/store/3x58hs91qd1zh08yvihrhhlgc9a8pgh6-nixos-system-t480s-26.11.20260813.0e251e2.drv=,
+and the accepted toplevel is
+=/nix/store/fx3mgcvkyzvswfzpszbnwbvqkzv057ij-nixos-system-t480s-26.11.20260813.0e251e2=.
+Generation 6 is current, booted, profile-selected and the systemd-boot default.
+Generation 5 remains the listed, selectable fallback at
+=/nix/store/h3pwl7ikpwk5xqjglg73kmzwsyrzv3ng-nixos-system-t480s-26.11.20260813.0e251e2=.
+
+The accepted remedies restrict the writable VFAT ESP to
+=fmask=0077,dmask=0077=; add an exact =Elan TrackPoint= rule for button
+scrolling on button 2 after the generic mouse rule without changing the
+touchpad policy; and use valid TLP AC/BAT CPU policy while leaving both
+=DISK_IDLE_SECS_ON_*= values empty so TLP does not write the obsolete Linux
+7.x =vm.laptop_mode= knob.  AC uses =performance/performance=; battery uses
+=powersave/balance_power=.
+
+Evidence is host-local and split by gate:
+
+- build: =~/t480s-epp-build-evidence-20260816T223000-0400=;
+- userspace/battery: =~/t480s-userspace-evidence-20260816T202300-0400=;
+- focused AC activation: =~/t480s-ac-activation-evidence-20260816T224500-0400=;
+- profile/boot staging: =~/t480s-stage-evidence-20260816T231000-0400=;
+- fresh boot: =~/t480s-reboot-evidence-20260816T234300-0400=.
+
+The fresh boot ran Linux 7.1.8 with live =fmask=0077,dmask=0077=.
+Ordinary-user access to =loader/random-seed= was denied and no insecure-seed
+warning appeared.  TLP applied AC =performance/performance= on all eight
+policies.  Xorg/DWM, TrackPoint button scrolling, the retained touchpad
+two-finger/natural-scrolling policy, SSH and Wi-Fi passed automated and
+physical acceptance; system and user failed-unit counts were zero.  The prior
+test activation retained =0022= because VFAT ignores these mask changes during
+remount; the fresh mount correctly applied =0077=.  Locked =nix run=
+diagnostics were ephemeral tools, not permanent dependencies.
+
+Battery policy acceptance comes from the earlier userspace gate; its generated
+policy was unchanged by the later one-line AC EPP alignment.  Secure Boot
+remains disabled with Setup Mode enabled.  This slice did not repair or
+universally accept unrelated D-Bus, firmware, hardware, networking,
+suspend/resume or other journal findings.  Generation 5 remains the fallback;
+no generation deletion, garbage collection, further activation or additional
+reboot occurred.
+
 * Identity
 - Source-work host: T480s NixOS at =skydive420dz@192.168.1.212=
 - Repository: =/home/skydive420dz/Projects/t480s-dotfiles=
@@ -19,12 +69,11 @@ storage/install, Gate 4 boot, Gate 5 health/correction activation, Gate 5B
 candidate build and Gate 5C transfer.  They are not authorization or evidence
 for later source bytes.
 
-The completed slice is T480s source sanitation, Git index reconciliation, a
-non-activating build, exact-candidate temporary test activations, automated
-runtime checks and the standalone root commit.  It does not authorize MSI
-access, a new disposition for dormant content, lock/hardware regeneration,
-persistent profile or boot-default change, reboot, physical acceptance or
-push.
+That historical boundary did not authorize later promotion or reboot.  The
+accepted generation-6 state and its later physical acceptance are recorded
+above.  This final repository gate is limited to its four named source and
+documentation paths, one normal commit and one non-force push; it does not
+authorize MSI access, lock/hardware regeneration or further runtime work.
 
 * Current Source Slice
 - =config/= owns live-editable application and desktop configuration outside
@@ -38,20 +87,9 @@ push.
 - the exact T430 behavior is preserved with the approved Brave, Emacs and
   Ghostty substitutions.
 
-Current source status: the intended tree is recorded as the standalone
-parentless initial commit.  =flake.lock= is absent by prior explicit decision.
-The source includes the Emacs repair and approved DWM =Super+e= Emacs launcher.
-It was built and temporarily test-activated as =74891x1h...=.  The existing
-X11 session still runs the prior DWM 6.6 binary, so =Super+e= awaits a DWM/X11
-restart; =Super+t= remains the original tiled-layout binding.
-
-Current runtime status is separate.  A temporary =test= activation points
-=/run/current-system= to
-=/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2=;
-the persistent system profile remains
-=/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e=.
-The booted fallback remains =a1rglfnj8...= and the running kernel remains
-6.18.40; no persistent promotion or reboot occurred.
+Current source and runtime status are the accepted generation-6 state recorded
+above.  It supersedes the earlier test-active snapshot that previously occupied
+this paragraph; the historical gate results below remain unchanged.
 
 The historical Gate 5B build remains
 =/nix/store/a86l514b3w24klc7jy09wj3cv46vy263-nixos-system-t480s-26.11.20260729.0954f7e=.
