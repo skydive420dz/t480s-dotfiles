@@ -43,6 +43,57 @@ test activation retained =0022= because VFAT ignores these mask changes during
 remount; the fresh mount correctly applied =0077=.  Locked =nix run=
 diagnostics were ephemeral tools, not permanent dependencies.
 
+** Fresh-boot journal reconciliation
+Generation 6 completed fresh-boot reconciliation with zero failed system or
+user units.  The evidence is
+=/home/skydive420dz/t480s-journal-reconciliation-evidence-20260817T003000-0400=.
+The accepted repairs remained effective: no world-accessible =/boot= or random
+seed warning, deprecated TLP =vm.laptop_mode= write, or TrackPoint
+two-finger-scroll failure occurred; the touchpad's two-finger and natural
+scrolling policy remained intact.
+
+Duplicate system and user D-Bus activation names are an upstream/NixOS
+packaging-path deduplication defect; the services themselves are healthy.  The
+rfkill warning is the standard udev request meeting NixOS's intentional TLP
+mask.  Do not unmask =systemd-rfkill= or create dual radio-policy ownership.
+Firmware/hardware capability diagnostics remain bounded by their recorded
+reopen criteria and are neither repaired nor candidates for suppression.
+
+The =org.freedesktop.resolve1= requester remains a separate future trace.
+NetworkManager and resolvconf own DNS; do not enable systemd-resolved merely to
+remove that warning.  The WEXT caller also remains unproven; do not name Brave
+or another application without contemporaneous attribution.
+
+The user-manager I/O-pressure item is closed with result
+=PASS — ATTRIBUTED, REDUNDANT ADJUSTMENT=.  Evidence is
+=/home/skydive420dz/t480s-psi-attribution-evidence-20260817T010000-0400=.
+All eight errno-16 records belonged to UID 1000, =user@1000.service= and
+=init.scope=; manager PIDs =1894=, =2024=, =2135= and =2190= each emitted two.
+The surviving PID =2190= had invocation
+=cc728039e900422ab9deb757282fe79a=.
+
+Effective policy was =IOPressureWatch=auto= with a 200 ms threshold.  The
+inherited watch targeted
+=/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/io.pressure=, and
+=IO_PRESSURE_WRITE= decoded strictly as data to =some 200000 2000000\0=: a
+200 ms threshold over a 2 s window.  Installed systemd was 261.1.  Matching
+official v261 source proved that the inherited watch is locked; manager
+initialization and =init.scope= realization each request the identical policy;
+and the period setter returns internal =EBUSY= before constructing or
+performing another kernel write.  The inherited watch remained open and
+pressure monitoring remained active.
+
+This is a systemd 261 logging/integration defect, not external descriptor
+contention, disabled PSI or a T480s runtime failure.  No local workaround is
+warranted: do not disable or alter PSI, systemd-oomd, resource control or
+pressure monitoring, and do not suppress the message.  Recheck after a future
+systemd update.  The former user-manager I/O-pressure trace item is therefore
+closed as an attributed upstream defect.  Primary-source anchors:
+[[https://github.com/systemd/systemd/blob/v261/src/core/manager.c#L819-L837][manager setup]],
+[[https://github.com/systemd/systemd/blob/v261/src/core/cgroup.c#L2180-L2191][init.scope setup]],
+[[https://github.com/systemd/systemd/blob/v261/src/libsystemd/sd-event/sd-event.c#L1930-L2134][inherited watch handling]] and
+[[https://github.com/systemd/systemd/blob/v261/src/libsystemd/sd-event/sd-event.c#L5453-L5518][locked-period guard]].
+
 Battery policy acceptance comes from the earlier userspace gate; its generated
 policy was unchanged by the later one-line AC EPP alignment.  Secure Boot
 remains disabled with Setup Mode enabled.  This slice did not repair or
