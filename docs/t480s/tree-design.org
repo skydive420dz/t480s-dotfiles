@@ -4,8 +4,10 @@
 * Status
 
 This document defines the approved ownership map and sanitation rules.  The
-current T480s source is the standalone baseline recorded as one parentless root
-commit on =main=; no inherited foreign-host commit is an ancestor.
+current T480s source uses standalone history rooted in one parentless commit on
+=main=; no inherited foreign-host commit is an ancestor.  Current deployment
+and synchronization evidence belongs in [[file:handoff.org][the handoff]] and
+[[file:gates.org][the gate ledger]].
 
 Mechanical organization and index reconciliation have occurred.  The
 completed source slice revised and placed only content whose disposition was
@@ -134,6 +136,7 @@ solely to fill the proposed hierarchy.
 
 #+begin_example
 flake.nix
+|-- t480-fingerprint input
 `-- host/t480s/system/default.nix
     |-- core/system
     |-- host/t480s/system/modules
@@ -159,7 +162,8 @@ flake.nix
     |   |-- services/{audio,networking,power}.nix
     |   `-- packages/{default,brave,fonts}.nix
     |-- inline access: user/groups/SSH/sudo/Fish shell
-    |-- modules/services/{boot,hardware,power,x11}.nix
+    |-- modules/services/{boot,fingerprint,hardware,power,x11}.nix
+    |   `-- fingerprint/{python-validity-06cb-009a.patch,tmpdir.py}
     `-- Home Manager
         `-- host/t480s/home/default.nix
             `-- core/home/default.nix
@@ -188,21 +192,10 @@ This is a source map.  It is not build or activation evidence.
 
 * Current source and active system
 
-The two states must not be conflated:
-
-| State | Evidence |
-|-------+----------|
-| Active runtime system | =/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2= |
-| Persistent system profile | =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e= |
-| Booted fallback | =/nix/store/a1rglfnj8fpql25w301v5xwk05qvw266-nixos-system-t480s-26.11.20260729.0954f7e= |
-| Active runtime health | =running= with no failed system or user units at the 2026-08-15 verification point |
-| Repository baseline | Standalone parentless root tree on =main= |
-| Functional-source proof | Static checks, exact non-activating build and temporary test activation passed |
-| Pending deployment | DWM/X11 restart/acceptance, persistent promotion, reboot and push |
-
-The repository baseline passed static checks, an exact build and temporary test
-activation as =74891x1h...=.  The existing X11 session still runs the prior
-DWM 6.6 binary, so =Super+e= awaits DWM/X11 restart and acceptance.
+Source, current runtime, persistent profile and booted generation must not be
+conflated.  Their current values and acceptance state are recorded in
+[[file:handoff.org][the handoff]] and [[file:gates.org][the gate ledger]] so this
+ownership map does not duplicate volatile store paths.
 
 The historical Gate 5B build remains evidence for its own reviewed source.  Its
 store-backed Emacs clause is superseded by the approved live =config/emacs/=
@@ -277,7 +270,8 @@ Not authorized in that slice:
 - reboot, service/physical acceptance, commit, history rewrite or push.
 
 Subsequent build, temporary test-activation and root-commit results are recorded
-in [[file:gates.org][the gate ledger]].  Push remains unauthorized.
+in [[file:gates.org][the gate ledger]].  At that sanitation checkpoint, push
+remained unauthorized.
 
 * Unresolved candidates
 
@@ -294,10 +288,8 @@ approval to import, enable, delete or rewrite them:
 - the structural split of user/groups/SSH/sudo/Fish-shell access policy out of
   the host root; behavior remains inline and unchanged pending separate exact
   review;
-- DWM/X11 session restart and =Super+e= acceptance; the source builds DWM 6.8
-  while the existing session still runs DWM 6.6;
-- fingerprint hardware support, PAM enrollment and browser/app passkey design
-  as separate security decisions;
+- browser platform-passkey integration, paused pending a mature Linux
+  implementation and a new security review;
 - external-display connector/mode calibration and the remaining physical
   acceptance checklist;
 - XLibre, a host-specific/ThinLTO kernel, backup destination/automation and the

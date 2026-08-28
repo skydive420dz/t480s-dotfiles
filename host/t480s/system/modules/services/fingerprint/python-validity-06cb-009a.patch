@@ -1,0 +1,151 @@
+diff --git a/validitysensor/flash.py b/validitysensor/flash.py
+--- a/validitysensor/flash.py
++++ b/validitysensor/flash.py
+@@ -40,6 +40,11 @@ def get_flash_info():
+     rsp = tls.cmd(unhex('3e'))
+     assert_status(rsp)
+     rsp = rsp[2:]
++    if len(rsp) < 0xe:
++        raise RuntimeError(
++            'Flash info response is too short; refusing to treat the sensor as uninitialized'
++        )
++
+     hdr = rsp[:0xe]
+     rsp = rsp[0xe:]
+     jid0, jid1, blocks, unknown0, blocksize, unknown1, pcnt = unpack('<HHHHHHH', hdr)
+diff --git a/validitysensor/init.py b/validitysensor/init.py
+--- a/validitysensor/init.py
++++ b/validitysensor/init.py
+@@ -28,8 +28,8 @@ def close():
+
+
+ def open_common():
+-    init_flash()
+     usb.send_init()
++    init_flash()
+     tls.parse_tls_flash(read_tls_flash())
+     tls.open()
+     upload_fwext()
+diff --git a/validitysensor/init_flash.py b/validitysensor/init_flash.py
+--- a/validitysensor/init_flash.py
++++ b/validitysensor/init_flash.py
+@@ -112,9 +112,18 @@ def init_flash():
+     if len(info.partitions) > 0:
+         logging.info('Flash has %d partitions.' % len(info.partitions))
+         return
+-    else:
+-        logging.info('Flash was not initialized yet. Formatting...')
+
++    dev = usb.usb_dev()
++    if (dev.idVendor, dev.idProduct) != (0x06CB, 0x009A):
++        raise RuntimeError('Refusing to format a sensor other than 06cb:009a')
++
++    if os.environ.get('PYTHON_VALIDITY_ALLOW_FLASH_FORMAT') != '06cb:009a':
++        raise RuntimeError(
++            'Sensor flash is uninitialized; refusing to format without '
++            'PYTHON_VALIDITY_ALLOW_FLASH_FORMAT=06cb:009a'
++        )
++
++    logging.info('Flash was not initialized yet. Formatting...')
+     assert_status(usb.cmd(reset_blob))
+
+     skey = ec.generate_private_key(ec.SECP256R1(), crypto_backend)
+diff --git a/validitysensor/usb.py b/validitysensor/usb.py
+--- a/validitysensor/usb.py
++++ b/validitysensor/usb.py
+@@ -1,5 +1,6 @@
+ import errno
+ import logging
++import time
+ import typing
+ from binascii import hexlify, unhexlify
+ from enum import Enum
+@@ -11,6 +12,9 @@ from .blobs import init_hardcoded, init_hardcoded_clean_slate
+ from .util import assert_status
+
+
++BUSY_STATUSES = (0x0401, 0x0104)
++
++
+ class SupportedDevices(Enum):
+     """USB IDs for supported devices"""
+     DEV_90 = (0x138a, 0x0090)
+@@ -76,16 +80,35 @@ class Usb:
+     def usb_dev(self):
+         return self.dev
+
++    def cmd_retry_busy(self, out: bytes):
++        for attempt in range(20):
++            try:
++                rsp = self.cmd(out)
++            except ucore.USBTimeoutError:
++                if attempt == 19:
++                    raise
++            else:
++                if len(rsp) < 2:
++                    raise RuntimeError('USB command returned a response shorter than its status word')
++
++                status, = unpack('<H', rsp[:2])
++                if status not in BUSY_STATUSES:
++                    return rsp
++
++            time.sleep(0.5)
++
++        raise RuntimeError('USB command remained busy after 20 attempts')
++
+     def send_init(self):
+         # self.dev.set_configuration()
+
+         # TODO analyse responses, detect hardware type
+-        assert_status(self.cmd(unhexlify('01')))  # RomInfo.get()
++        assert_status(self.cmd_retry_busy(unhexlify('01')))  # RomInfo.get()
+         assert_status(self.cmd(unhexlify('19')))
+
+         # 43 -- get partition header(?) (02 -- fwext partition)
+         # c28c745a in response is a FwextBuildtime = 0x5A748CC2
+-        rsp = self.cmd(unhexlify('4302'))  # get_fw_info()
++        rsp = self.cmd_retry_busy(unhexlify('4302'))  # get_fw_info()
+
+         assert_status(self.cmd(init_hardcoded))
+
+diff --git a/tests/test_usb_retry.py b/tests/test_usb_retry.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_usb_retry.py
+@@ -0,0 +1,36 @@
++import sys
++from types import ModuleType
++from unittest.mock import patch
++
++usb_core = ModuleType('usb.core')
++usb_core.Device = object
++usb_core.USBError = type('USBError', (Exception,), {})
++usb_core.USBTimeoutError = type('USBTimeoutError', (usb_core.USBError,), {})
++usb_module = ModuleType('usb')
++usb_module.core = usb_core
++sys.modules['usb'] = usb_module
++sys.modules['usb.core'] = usb_core
++
++from validitysensor.usb import Usb
++
++
++def main():
++    usb = Usb()
++    responses = iter((b'\x04\x01', b'\x01\x04', b'\x00\x00'))
++    usb.cmd = lambda _: next(responses)
++
++    with patch('validitysensor.usb.time.sleep') as sleep:
++        assert usb.cmd_retry_busy(b'command') == b'\x00\x00'
++        assert sleep.call_count == 2
++
++    usb.cmd = lambda _: b'\x00'
++    try:
++        usb.cmd_retry_busy(b'command')
++    except RuntimeError as error:
++        assert 'shorter than its status word' in str(error)
++    else:
++        raise AssertionError('short USB response was accepted')
++
++
++if __name__ == '__main__':
++    main()

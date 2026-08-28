@@ -348,8 +348,49 @@ and backup automation are independent, measurement-driven projects after the
 baseline is accepted.  Each retains the accepted Xorg/kernel generation.
 
 * Gate 8 - Initial Commit And Push
-Status: standalone local root commit complete 2026-08-15; push not authorized.
+Status: complete through the pre-fingerprint baseline.
 
-The current intended T480s tree is recorded as one parentless root commit; none
-of the 658 inherited commits is an ancestor.  Replacing =origin/main= remains a
-separate, unauthorized action.
+The initial standalone T480s tree was recorded as one parentless root commit;
+none of the 658 inherited commits is an ancestor.  The fingerprint slice began
+from synchronized =main= and =origin/main= at
+=d2ddbe7ed12bcd0672f75d7c524c3ed4e803c88c=.  Later source slices must prove
+their own commit and push state independently.
+
+* Gate 9 - Fingerprint And Sudo Acceptance
+Status: source, build, activation, enrollment and sudo runtime acceptance
+complete; fresh-boot acceptance pending.
+
+The source slice consists of =flake.nix=, =flake.lock=,
+=host/t480s/system/default.nix=,
+=host/t480s/system/modules/services/fingerprint.nix= and its
+=fingerprint/python-validity-06cb-009a.patch= and =fingerprint/tmpdir.py=
+support files.  The tracked upstream input is
+=github:viktor-grunwaldt/t480-fingerprint-nixos= at
+=74f9899daf4a272160a9190fa5c72dfbe6c7fb57=.  The local patch binds destructive
+flash initialization to exact device =06cb:009a= and explicit opt-in, handles
+the device's initialization ordering and bounded busy responses, and rejects
+short flash/status responses.  The runtime-state helper requires a root-owned
+mode-0700 =/run/python-validity= directory.
+
+The accepted derivation and toplevel are:
+
+#+begin_example
+/nix/store/mlnbiw93gmrs51hcbg3nn2gb0y6lqj1b-nixos-system-t480s-26.11.20260813.0e251e2.drv
+/nix/store/30v62h3svs3jl6a3rsyk2qc707nzapga-nixos-system-t480s-26.11.20260813.0e251e2
+#+end_example
+
+The toplevel is current and profile-selected; accepted generation 6
+=/nix/store/fx3mgcvkyzvswfzpszbnwbvqkzv057ij-nixos-system-t480s-26.11.20260813.0e251e2=
+remains booted pending a separate reboot gate.  =open-fprintd.service= and
+=python3-validity.service= are active with zero failed system units.  The exact
+=06cb:009a= reader has one enrolled =right-index-finger=.  Direct verification
+and sudo authentication passed.  Only =sudo.fprintAuth= is enabled; login and
+other PAM surfaces remain disabled, and password fallback is retained.
+
+* Gate 10 - Browser WebAuthn
+Status: deferred after read-only security review; no mutation.
+
+The reviewed browser bridge is not accepted for production credentials.  No
+extension, native host or browser policy was installed.  Reopen only for a
+mature Linux platform-authenticator implementation with correct origin and
+relying-party binding and an acceptable key-storage boundary.

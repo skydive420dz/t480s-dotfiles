@@ -5,6 +5,7 @@
 #+begin_src mermaid
 flowchart TD
   F[flake.nix] --> T[nixosConfigurations.t480s]
+  F --> FI[t480-fingerprint input]
   T --> HS[host/t480s/system/default.nix]
   HS --> CS[core/system/default.nix]
   HS --> HSM[host/t480s/system/modules]
@@ -20,15 +21,16 @@ flowchart TD
   L --> C[config/emacs fish ghostty ranger tmux]
   HL --> XC[config/x11]
   HSM --> X[Xorg startx DWM dmenu slstatus]
+  HSM --> FS[fingerprint module]
+  FS --> FA[open-fprintd python-validity sudo-only PAM]
   X --> SH[config/dwm config/dmenu config/slstatus]
   CS --> CSP[packages: default brave fonts]
   CS --> CSS[services: audio networking power]
 #+end_src
 
-This functional source graph passed static parsing, formatting, reference,
-build and temporary test-activation checks.  =/run/current-system= now uses
-its resulting candidate; the persistent profile and booted fallback remain
-older, and the existing X11 session still runs the prior DWM binary.
+This is the active ownership graph.  Volatile build, activation, profile,
+booted-generation and runtime results belong in [[file:handoff.org][the handoff]]
+and [[file:gates.org][the gate ledger]], not in this architecture map.
 
 The security-sensitive access block remains inline in the host root.  Moving
 it is structural only, but requires a separate exact review because it contains
@@ -61,6 +63,7 @@ configuration never imports Nix; modules only package or link it.
 | Bluetooth media | BlueZ and enable-only ownership of its native user =mpris-proxy= unit |
 | Networking and remote access | NetworkManager and OpenSSH |
 | Charge thresholds and AC/battery policy | TLP |
+| Fingerprint and sudo authentication | T480s fingerprint module, =open-fprintd=, =python-validity= and sudo-only PAM |
 | Lid and sleep keys | systemd-logind |
 | Critical battery | UPower, initially =PowerOff= |
 | Trim | weekly fstrim timer |
@@ -83,6 +86,7 @@ it owns the real kernel backlight interface on this machine.
 - No backup timer until an independent destination is identified.
 - No hibernate critical action until controlled resume acceptance passes.
 - No language stack merely because the Emacs config contains optional support.
-- No fingerprint/PAM/browser-passkey stack until its driver, fallback and
-  authentication boundaries receive a separate decision.
+- Fingerprint authentication is accepted for sudo only with password fallback;
+  login and other PAM surfaces remain disabled.  Browser passkeys remain
+  deferred pending a mature Linux platform-authenticator design.
 - Dormant modules remain candidates, not active architecture.

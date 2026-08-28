@@ -39,7 +39,28 @@
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "t480-fingerprint": "t480-fingerprint"
+      }
+    },
+    "t480-fingerprint": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786823131,
+        "narHash": "sha256-V6dx5MpqZZaTWZN0Y77yLMR4/aKaLmoRaFq8Vps6OR8=",
+        "owner": "viktor-grunwaldt",
+        "repo": "t480-fingerprint-nixos",
+        "rev": "74f9899daf4a272160a9190fa5c72dfbe6c7fb57",
+        "type": "github"
+      },
+      "original": {
+        "owner": "viktor-grunwaldt",
+        "repo": "t480-fingerprint-nixos",
+        "type": "github"
       }
     }
   },

@@ -6,6 +6,7 @@
     ./kernel.nix
     ../../../core/system
     ./modules/services/boot.nix
+    ./modules/services/fingerprint.nix
     ./modules/services/hardware.nix
     ./modules/services/power.nix
     ./modules/services/x11.nix
