@@ -1,14 +1,55 @@
 #+title: T480s Bootstrap Handoff
 #+startup: overview
 
-* Generation 7 Fingerprint Acceptance
+* 2026-08-31 Fingerprint Resume Acceptance
+The accepted baseline starts from =main= at
+=541ceecb7b1bcd9acbfb9b86427bd586fb686cea= plus the intentional
+=flake.lock= refresh to nixpkgs =d2f6794= and Home Manager =82c265f=; the
+=t480-fingerprint= input remains pinned at
+=74f9899daf4a272160a9190fa5c72dfbe6c7fb57=.  The lock SHA-256 is
+=f3c0eace8401b44d3d9ea4cf774c8caff10165a6e258eed0e93f461ca03b440e=.
+
+After hybrid resume, USB reader =06cb:009a= re-enumerated while
+=python3-validity.service= retained its old libusb handle.  The daemon remained
+active, but the reader remained unusable until restart.  During restart, the
+old daemon's exit callback confirmed its stale handle with =Errno 19=.  The
+host-owned repair adds only:
+
+#+begin_src nix
+powerManagement.resumeCommands = "${pkgs.systemd}/bin/systemctl restart python3-validity.service";
+#+end_src
+
+Exactly one non-activating build completed with status 0:
+
+#+begin_example
+nix build --print-out-paths --no-link --no-write-lock-file path:/home/skydive420dz/Projects/t480s-dotfiles#nixosConfigurations.t480s.config.system.build.toplevel
+/nix/store/4l0ji8nzvslxfpm7xjmja50q1ynh38al-nixos-system-t480s-26.11.20260829.d2f6794.drv
+/nix/store/6mwkw2m603gy1l6nhksm47yw35hkbq7p-nixos-system-t480s-26.11.20260829.d2f6794
+#+end_example
+
+The generated =sleep-actions.service= contains exactly one post-resume restart
+of =python3-validity.service=.  The candidate was test-activated without
+changing the system profile or boot entry.  One hybrid-sleep cycle preserved
+boot ID =a6d20bb3-638d-41fe-8007-39ae9cc4644b=; the reader disconnected and
+re-enumerated, and the driver PID changed from =9489= to =13748=.  The new
+daemon opened the sensor, loaded calibration from the existing file, retained
+the enrolled =right-index-finger=, and passed physical sudo authentication with
+=status=0= and no password fallback.  =open-fprintd.service= and
+=python3-validity.service= are active, and no failed system units were observed.
+
+The test-active candidate is =6mwkw2m...=.  The persistent profile and booted
+generation remain generation 9 at
+=/nix/store/ysxm6ikknlzfvqnkcrvmv3kjvwc2w28j-nixos-system-t480s-26.11.20260829.d2f6794=.
+Persistent promotion and reboot acceptance remain separate gates.
+
+* Historical Generation 7 Fingerprint Acceptance
 The accepted fingerprint candidate is
 =/nix/store/30v62h3svs3jl6a3rsyk2qc707nzapga-nixos-system-t480s-26.11.20260813.0e251e2=
 with derivation
 =/nix/store/mlnbiw93gmrs51hcbg3nn2gb0y6lqj1b-nixos-system-t480s-26.11.20260813.0e251e2.drv=.
-It is current and profile-selected.  Generation 6
+At that checkpoint it was current and profile-selected.  Generation 6
 =/nix/store/fx3mgcvkyzvswfzpszbnwbvqkzv057ij-nixos-system-t480s-26.11.20260813.0e251e2=
-remains booted until a separately authorized reboot.
+remained booted until a separately authorized reboot.
 
 The host-owned fingerprint module follows
 =github:viktor-grunwaldt/t480-fingerprint-nixos= through =flake.lock=, applies
@@ -144,12 +185,13 @@ storage/install, Gate 4 boot, Gate 5 health/correction activation, Gate 5B
 candidate build and Gate 5C transfer.  They are not authorization or evidence
 for later source bytes.
 
-That historical boundary did not authorize later promotion or reboot.  The
-accepted generation-6 state and its later physical acceptance are recorded
-above.  The fingerprint closeout is limited to its six candidate source paths,
-four current-status documentation files, one normal commit and one non-force
-push; it does not authorize MSI access, hardware regeneration or further
-runtime work.
+Those historical boundaries did not authorize later promotion or reboot.  The
+later fingerprint and resume gates were separately authorized and are recorded
+above and in [[file:gates.org][the gate ledger]].  This closeout is limited to the
+intentional input refresh, the accepted one-line resume repair, these
+current-state documents, scoped normal commits and one non-force push.  It does
+not authorize MSI access, hardware regeneration, persistent promotion or
+another runtime test.
 
 * Current Source Slice
 - =config/= owns live-editable application and desktop configuration outside
@@ -163,9 +205,10 @@ runtime work.
 - the exact T430 behavior is preserved with the approved Brave, Emacs and
   Ghostty substitutions.
 
-Current fingerprint source and runtime status are recorded in =Generation 7
-Fingerprint Acceptance= above and in [[file:gates.org][the gate ledger]].  The
-historical gate results below remain unchanged.
+Current fingerprint source and runtime status are recorded in =2026-08-31
+Fingerprint Resume Acceptance= above and in
+[[file:gates.org][the gate ledger]].  The historical gate results below remain
+unchanged.
 
 The historical Gate 5B build remains
 =/nix/store/a86l514b3w24klc7jy09wj3cv46vy263-nixos-system-t480s-26.11.20260729.0954f7e=.
@@ -382,11 +425,13 @@ remain separate; the later root commit is recorded in the gate ledger.
 2. Verify the T480s identity, repository path, =main=, clean worktree, tracked
    =flake.lock= and equality with live =origin/main=.
 3. Stop on unexplained source or live-state drift.
-4. Verify current/profile generation 7 separately from booted generation 6.
-5. Treat Gate 5B and older lockless/source slices as historical evidence only.
+4. Until persistent promotion, verify the test-active =6mwkw2m...= candidate
+   separately from the profile-selected and booted generation 9 =ysxm6ik...=.
+5. Treat Gate 5B and the generation 7 paths as historical evidence only.
 6. Reopen browser WebAuthn only after a new security and fallback review.
 
 * Next Unauthorized Action
-The next optional runtime gate is one reboot into generation 7 followed by
-fresh-boot fingerprint, sudo fallback and service-health acceptance.  Browser
-WebAuthn remains deferred and is not part of that gate.
+The next optional deployment gate is persistent promotion of the accepted
+candidate.  A subsequent, separately authorized reboot gate must confirm the
+fresh-boot fingerprint, sudo fallback, resume recovery and service health.
+Browser WebAuthn remains deferred and is not part of either gate.

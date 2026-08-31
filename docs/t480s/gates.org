@@ -358,7 +358,7 @@ their own commit and push state independently.
 
 * Gate 9 - Fingerprint And Sudo Acceptance
 Status: source, build, activation, enrollment and sudo runtime acceptance
-complete; fresh-boot acceptance pending.
+completed at this gate; fresh-boot acceptance was pending.
 
 The source slice consists of =flake.nix=, =flake.lock=,
 =host/t480s/system/default.nix=,
@@ -379,13 +379,14 @@ The accepted derivation and toplevel are:
 /nix/store/30v62h3svs3jl6a3rsyk2qc707nzapga-nixos-system-t480s-26.11.20260813.0e251e2
 #+end_example
 
-The toplevel is current and profile-selected; accepted generation 6
+At this gate, generation 7 was current and profile-selected.  The accepted
+generation-6 toplevel
 =/nix/store/fx3mgcvkyzvswfzpszbnwbvqkzv057ij-nixos-system-t480s-26.11.20260813.0e251e2=
-remains booted pending a separate reboot gate.  =open-fprintd.service= and
-=python3-validity.service= are active with zero failed system units.  The exact
-=06cb:009a= reader has one enrolled =right-index-finger=.  Direct verification
-and sudo authentication passed.  Only =sudo.fprintAuth= is enabled; login and
-other PAM surfaces remain disabled, and password fallback is retained.
+remained booted pending a separate reboot gate.  =open-fprintd.service= and
+=python3-validity.service= were active with zero failed system units.  The exact
+=06cb:009a= reader had one enrolled =right-index-finger=.  Direct verification
+and sudo authentication passed.  Only =sudo.fprintAuth= was enabled; login and
+other PAM surfaces remained disabled, and password fallback was retained.
 
 * Gate 10 - Browser WebAuthn
 Status: deferred after read-only security review; no mutation.
@@ -394,3 +395,57 @@ The reviewed browser bridge is not accepted for production credentials.  No
 extension, native host or browser policy was installed.  Reopen only for a
 mature Linux platform-authenticator implementation with correct origin and
 relying-party binding and an acceptable key-storage boundary.
+
+* Gate 11 - Fingerprint Resume Recovery
+Status: source, one build, temporary activation, one hybrid-resume cycle and
+physical sudo acceptance complete; persistent promotion and fresh-boot
+acceptance pending.
+
+The accepted baseline begins at =main=
+=541ceecb7b1bcd9acbfb9b86427bd586fb686cea= and includes the user's intentional
+=flake.lock= refresh: nixpkgs =0e251e2= to =d2f6794= and Home Manager =5bd5059=
+to =82c265f=.  The fingerprint input remains pinned at
+=74f9899daf4a272160a9190fa5c72dfbe6c7fb57=, and the resulting lock SHA-256 is
+=f3c0eace8401b44d3d9ea4cf774c8caff10165a6e258eed0e93f461ca03b440e=.
+
+Read-only journal evidence showed the =06cb:009a= reader disconnecting and
+re-enumerating after hybrid resume while =python3-validity.service= remained
+active with the old libusb handle.  The reader remained unusable until restart;
+during restart, the old daemon's exit callback confirmed its stale handle with
+=Errno 19=.  A manual service restart restored the reader, proving that the
+smallest owning repair was to reopen that handle after resume:
+
+#+begin_src nix
+powerManagement.resumeCommands = "${pkgs.systemd}/bin/systemctl restart python3-validity.service";
+#+end_src
+
+The generated =sleep-actions.service= retained its native sleep ordering and
+contained exactly one =ExecStop= restart of =python3-validity.service= after
+resume.  Nix parsing, =nixfmt --check=, =git diff --check=,
+=nix flake check --no-build --no-write-lock-file= and
+=systemd-analyze verify= passed.
+
+Exactly one no-link build ran, with status 0:
+
+#+begin_example
+nix build --print-out-paths --no-link --no-write-lock-file path:/home/skydive420dz/Projects/t480s-dotfiles#nixosConfigurations.t480s.config.system.build.toplevel
+/nix/store/4l0ji8nzvslxfpm7xjmja50q1ynh38al-nixos-system-t480s-26.11.20260829.d2f6794.drv
+/nix/store/6mwkw2m603gy1l6nhksm47yw35hkbq7p-nixos-system-t480s-26.11.20260829.d2f6794
+#+end_example
+
+The toplevel was test-activated without changing the profile or boot entry.
+One hybrid-sleep cycle retained boot ID
+=a6d20bb3-638d-41fe-8007-39ae9cc4644b=.  USB device 5 disconnected and the
+same reader appeared as device 6 before the resume restart.  The driver PID
+changed from =9489= to =13748=; the new daemon opened the sensor, loaded
+calibration from the existing file and retained the enrolled
+=right-index-finger=.  The old daemon's exit callback logged its already-known
+=Errno 19= stale handle, but the replacement initialized successfully.
+=fprintd-list= succeeded, physical post-resume sudo authentication completed
+with =status=0= and no password fallback, both fingerprint services were active,
+and no failed system units were present.
+
+The test-active system remains =6mwkw2m...=.  The persistent profile and booted
+generation remain generation 9 at
+=/nix/store/ysxm6ikknlzfvqnkcrvmv3kjvwc2w28j-nixos-system-t480s-26.11.20260829.d2f6794=.
+No persistent promotion, boot staging or reboot occurred in this gate.

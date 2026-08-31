@@ -43,6 +43,9 @@ in
   system.build.fingerprintBootstrap = fingerprintBootstrap;
   system.checks = [ fingerprintBootstrap ];
 
+  # The reader re-enumerates after sleep, so reopen its USB handle.
+  powerManagement.resumeCommands = "${pkgs.systemd}/bin/systemctl restart python3-validity.service";
+
   systemd.tmpfiles.rules = [
     "d /run/python-validity 0700 root root -"
     "d /var/lib/python-validity 0700 root root -"
