@@ -154,8 +154,12 @@ target artifact:
 /home/skydive420dz/t480s-gate5b-a86l514b.nar.zst
 #+end_example
 
-The file is mode =0600=, 4,150,763,393 bytes, and passed =zstd -t=.  Its SHA-256
-is =90791a5a3de0ae39e20b3ab8e07c70c1674190c82f0f6e6375055d68d97b6873=.
+The file was mode =0600=, 4,150,763,393 bytes, and passed =zstd -t=.  Its
+SHA-256 was
+=90791a5a3de0ae39e20b3ab8e07c70c1674190c82f0f6e6375055d68d97b6873=.
+It was permanently deleted during the authorized 2026-08-31 home cleanup after
+later native builds and runtime acceptance superseded it.  The path and checksum
+remain historical provenance only.
 The target remained on
 =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e=.
 Privileged import, profile change, activation and reboot remain unauthorized.
@@ -449,3 +453,24 @@ The test-active system remains =6mwkw2m...=.  The persistent profile and booted
 generation remain generation 9 at
 =/nix/store/ysxm6ikknlzfvqnkcrvmv3kjvwc2w28j-nixos-system-t480s-26.11.20260829.d2f6794=.
 No persistent promotion, boot staging or reboot occurred in this gate.
+
+* Gate 12 - Home Artifact Cleanup
+Status: complete 2026-08-31; permanent deletion and preservation checks passed.
+
+After a read-only inventory, the user explicitly authorized permanent deletion
+of the audited garbage while explicitly excluding Brave.  The exact operation
+removed 20 directories and 6 files totaling 4.1 GiB: 13 completed T480s
+evidence directories, the 4,150,763,393-byte Gate 5C NAR, abandoned Emacs
+migration/pre-repair state, three T480s log-cache directories, the Nix
+evaluation cache, four stale autosave indexes and broken legacy Nix
+profile/channel links.  The deleted bytes are not recoverable.
+
+Home usage fell from 6.1 GiB to 2.1 GiB.  The active 1.5 GiB Brave cache and
+browser profile remained untouched.  SSH, the authoritative repository, current
+configuration, active Emacs state and authentication data were preserved.  The
+repository was clean and synchronized at
+=6369c348be84cda51b910c097f9f345bfcdb9999= before this documentation-only
+closeout.  The active system remained
+=6mwkw2m...=; the profile-selected and booted generation remained =ysxm6ik...=,
+and no failed system units were present.  No build, activation, profile change,
+boot staging or reboot occurred.
