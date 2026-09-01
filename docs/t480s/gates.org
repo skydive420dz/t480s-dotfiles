@@ -474,3 +474,38 @@ closeout.  The active system remained
 =6mwkw2m...=; the profile-selected and booted generation remained =ysxm6ik...=,
 and no failed system units were present.  No build, activation, profile change,
 boot staging or reboot occurred.
+
+* Gate 13 - Yazi Replacement And Fresh-Boot Acceptance
+Status: complete 2026-08-31 through source, one build, test activation,
+persistent staging, one reboot and physical acceptance.
+
+The accepted slice began from synchronized =main= and =origin/main= at
+=5cb04a9d98bf6d2251c1eda34732ffff24eaa46d=.  It replaces Ranger with native
+Home Manager =programs.yazi= ownership, removes the Ranger package, plugin and
+live links, assigns =fm= and =FILE_MANAGER= to Yazi, launches Yazi in the
+repository tmux session, and enables tmux image-protocol passthrough.  The
+existing nsxiv, lean-mpv and Brave roles remain explicit Yazi openers.
+
+Exactly one no-link build completed with status 0:
+
+#+begin_example
+nix build --print-out-paths --no-link --no-write-lock-file path:/home/skydive420dz/Projects/t480s-dotfiles#nixosConfigurations.t480s.config.system.build.toplevel
+/nix/store/y9h47jmsrj2n6x7gdwmvf3ap7akzyfhx-nixos-system-t480s-26.11.20260829.d2f6794.drv
+/nix/store/q80fa9kixjr83ycjag9g9hwbnyjj0a18-nixos-system-t480s-26.11.20260829.d2f6794
+#+end_example
+
+The exact output passed test activation before being staged as generation 10.
+Yazi 26.8.15, Fish =fm -> y=, =FILE_MANAGER=yazi=, tmux passthrough, local and
+SSH image preview, and the exact nsxiv opener passed runtime or physical
+acceptance; Ranger was absent.  After one separate reboot, current, booted and
+profile-selected system paths all resolve to =q80fa9...=.  Generation 9
+=ysxm6ik...= remains the fallback and no failed system or user units were
+observed.
+
+The accepted implementation is commit =acff34d=.  Its pre-documentation
+restricted diff has SHA-256
+=54e402e67f6579cb2145384141c1d593a954bf12e7554c88098335063972573c=,
+and the tracked lock SHA-256 remained
+=f3c0eace8401b44d3d9ea4cf774c8caff10165a6e258eed0e93f461ca03b440e=.
+No MSI access, lockfile update, hardware regeneration or generation deletion
+occurred.

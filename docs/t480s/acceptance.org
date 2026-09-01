@@ -46,7 +46,7 @@
 - [ ] =Super+e= opens a graphical Emacs client frame.
 - [ ] =Super+t= selects the original tiled layout.
 - [ ] Ghostty, Fish and tmux.
-- [ ] Ranger opens images in nsxiv.
+- [ ] Yazi previews images and opens them in nsxiv.
 
 Only after controlled hibernation and resume pass may
 =services.upower.criticalPowerAction= change from =PowerOff= to =Hibernate=.

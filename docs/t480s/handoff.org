@@ -1,7 +1,43 @@
 #+title: T480s Bootstrap Handoff
 #+startup: overview
 
-* 2026-08-31 Fingerprint Resume Acceptance
+* 2026-08-31 Generation 10 Yazi Acceptance
+The accepted replacement began from synchronized =main= and =origin/main= at
+=5cb04a9d98bf6d2251c1eda34732ffff24eaa46d=.  The tracked =flake.lock= was not
+changed; its SHA-256 remains
+=f3c0eace8401b44d3d9ea4cf774c8caff10165a6e258eed0e93f461ca03b440e=.
+
+Ranger, =ranger_devicons=, their package module and their two live configuration
+links were removed.  The native Home Manager =programs.yazi= module now owns
+Yazi, its =y= shell wrapper, navigation settings and explicit nsxiv, lean-mpv and
+Brave openers.  Fish =fm= launches =y=, =FILE_MANAGER= is =yazi=, the repository
+tmux session launches Yazi, and tmux permits terminal image-protocol
+passthrough.
+
+Exactly one non-activating build completed with status 0:
+
+#+begin_example
+nix build --print-out-paths --no-link --no-write-lock-file path:/home/skydive420dz/Projects/t480s-dotfiles#nixosConfigurations.t480s.config.system.build.toplevel
+/nix/store/y9h47jmsrj2n6x7gdwmvf3ap7akzyfhx-nixos-system-t480s-26.11.20260829.d2f6794.drv
+/nix/store/q80fa9kixjr83ycjag9g9hwbnyjj0a18-nixos-system-t480s-26.11.20260829.d2f6794
+#+end_example
+
+The exact candidate was test-activated before persistent staging.  Runtime
+checks found Yazi 26.8.15, no Ranger executable, the intended Fish and
+environment ownership, tmux passthrough, Ghostty's image adapter, working image
+preview locally and through SSH, and the exact nsxiv opener.  The user accepted
+the nsxiv opener and Yazi behavior.
+
+The candidate was then staged as generation 10 without rebooting.  After one
+separately authorized reboot, current, booted and profile-selected system paths
+all resolve to =q80fa9...=.  Generation 9 =ysxm6ik...= remains the retained
+systemd-boot fallback.  No failed system or user units were observed.
+
+The accepted implementation is commit =acff34d=; the pre-documentation
+restricted diff has SHA-256
+=54e402e67f6579cb2145384141c1d593a954bf12e7554c88098335063972573c=.
+
+* Historical 2026-08-31 Fingerprint Resume Acceptance
 The accepted baseline starts from =main= at
 =541ceecb7b1bcd9acbfb9b86427bd586fb686cea= plus the intentional
 =flake.lock= refresh to nixpkgs =d2f6794= and Home Manager =82c265f=; the
@@ -223,10 +259,10 @@ another runtime test.
 - the exact T430 behavior is preserved with the approved Brave, Emacs and
   Ghostty substitutions.
 
-Current fingerprint source and runtime status are recorded in =2026-08-31
-Fingerprint Resume Acceptance= above and in
-[[file:gates.org][the gate ledger]].  The historical gate results below remain
-unchanged.
+Current Yazi source and fresh-boot status are recorded in =2026-08-31
+Generation 10 Yazi Acceptance= above.  Current fingerprint status is recorded
+in =Historical 2026-08-31 Fingerprint Resume Acceptance= and in
+[[file:gates.org][the gate ledger]].  Older gate results below remain unchanged.
 
 The historical Gate 5B build remains
 =/nix/store/a86l514b3w24klc7jy09wj3cv46vy263-nixos-system-t480s-26.11.20260729.0954f7e=.
@@ -408,16 +444,13 @@ remain separate; the later root commit is recorded in the gate ledger.
 - Fingerprint authentication is accepted for sudo only with password fallback;
   login and other PAM surfaces remain disabled.  Browser/app passkeys are
   paused pending a mature Linux platform-authenticator design.
-- Dormant Home modules are GnuPG, tmux sessions and
-  removable-media automation.  Dormant system modules are package candidates,
+- Dormant Home modules are GnuPG and removable-media automation.  Dormant
+  system modules are package candidates,
   input extras and removable-media automation.  Exact paths are listed in
   [[file:tree-design.org][the ownership map]].
 - User/groups/SSH/sudo/Fish-shell policy remains inline in the host system root.
   A structural move needs separate exact review because it contains access and
   privilege policy; behavior is unchanged.
-- Full tmux parser validation remains for the later build/acceptance path;
-  static command and Emacs-wrapper regex checks passed without starting a tmux
-  server in this source-only slice.
 
 * Recovery And Preservation
 - The current authoring checkout is the T480s repository itself; its origin is
@@ -430,26 +463,24 @@ remain separate; the later root commit is recorded in the gate ledger.
 - The previous inherited tip =3d96cc40e9b1ba1ec3385245862ee13e45f3dfdd= is
   not an ancestor of the standalone root commit.  It is no longer =origin/main=;
   the recorded hash and any retained local reflog are its recovery evidence.
-- The current temporary generation, persistent profile and booted fallback
-  remain recovery references.
-- The completed test activation changed the runtime generation and ran Home
-  Manager activation, including the Emacs restart; it did not touch MSI,
-  disks, the persistent profile or boot entries.
+- Generation 10 =q80fa9...= is current, profile-selected and booted; generation 9
+  =ysxm6ik...= remains the retained fallback.
+- The accepted Yazi slice progressed through test activation, persistent boot
+  staging and one reboot.  It did not touch MSI, repartition storage, regenerate
+  hardware configuration or change =flake.lock=.
 - Roots queries automatically pruned stale auto-GC and temporary-root metadata;
   no live root, profile, candidate or service changed.
 
 * Resume Procedure
 1. Read this file and [[file:gates.org][the gate ledger]].
-2. Verify the T480s identity, repository path, =main=, clean worktree, tracked
-   =flake.lock= and equality with live =origin/main=.
+2. Verify the T480s identity, repository path, =main=, tracked =flake.lock= and
+   equality with live =origin/main=.
 3. Stop on unexplained source or live-state drift.
-4. Until persistent promotion, verify the test-active =6mwkw2m...= candidate
-   separately from the profile-selected and booted generation 9 =ysxm6ik...=.
+4. Verify generation 10 =q80fa9...= as current, booted and profile-selected and
+   retain generation 9 =ysxm6ik...= as rollback.
 5. Treat Gate 5B and the generation 7 paths as historical evidence only.
 6. Reopen browser WebAuthn only after a new security and fallback review.
 
 * Next Unauthorized Action
-The next optional deployment gate is persistent promotion of the accepted
-candidate.  A subsequent, separately authorized reboot gate must confirm the
-fresh-boot fingerprint, sudo fallback, resume recovery and service health.
-Browser WebAuthn remains deferred and is not part of either gate.
+No Yazi deployment work remains.  Any later source, build, activation, reboot
+or hardware change requires a new gate.  Browser WebAuthn remains deferred.

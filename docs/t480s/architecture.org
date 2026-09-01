@@ -16,9 +16,9 @@ flowchart TD
   HH --> CH[core/home/default.nix]
   HH --> HL[host live links: Xresources and display-profile]
   CH --> L[Home Manager live links]
-  CH --> HP[packages: bat brave btop emacs fastfetch fish fzf ghostty git ranger tmux]
+  CH --> HP[packages: bat brave btop emacs fastfetch fish fzf ghostty git tmux yazi]
   CH --> HU[user services: Emacs and native mpris-proxy]
-  L --> C[config/emacs fish ghostty ranger tmux]
+  L --> C[config/emacs fish ghostty tmux]
   HL --> XC[config/x11]
   HSM --> X[Xorg startx DWM dmenu slstatus]
   HSM --> FS[fingerprint module]
@@ -58,7 +58,7 @@ configuration never imports Nix; modules only package or link it.
 | Editor | live =config/emacs/= plus explicitly selected external tools |
 | Terminal and multiplexer | Ghostty and tmux with live application configuration |
 | Shell and tty1 X startup | Fish with live configuration |
-| File/image workflow | Ranger live configuration, nsxiv and lean mpv |
+| File/image workflow | Yazi through its native Home Manager module, with nsxiv for images, lean mpv for media and Brave for HTML |
 | Audio | PipeWire, WirePlumber, ALSA compatibility |
 | Bluetooth media | BlueZ and enable-only ownership of its native user =mpris-proxy= unit |
 | Networking and remote access | NetworkManager and OpenSSH |
@@ -74,6 +74,7 @@ configuration never imports Nix; modules only package or link it.
 | Firefox | Brave |
 | Neovim | the clean Emacs configuration adapted and owned in this repository |
 | =st= | Ghostty |
+| Ranger | Yazi through the native Home Manager module |
 | OpenRC/ACPI/cron ownership | NixOS modules and systemd |
 
 The saved DWM configuration is retained except for the explicit Ghostty and

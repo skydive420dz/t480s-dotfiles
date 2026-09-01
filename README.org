@@ -5,7 +5,7 @@
 This is the standalone NixOS configuration for the Lenovo ThinkPad T480s.  It
 translates the working T430 workflow into NixOS while keeping T480s hardware
 facts host-owned.  The intended desktop remains X11, DWM, dmenu and slstatus,
-with Brave, Emacs, Ghostty, tmux, Fish and Ranger as the approved application
+with Brave, Emacs, Ghostty, tmux, Fish and Yazi as the approved application
 roles.
 
 This repository does not import another machine's repository.  Earlier source
@@ -13,42 +13,26 @@ was mechanically useful; the retained active source is now assigned to a
 T480s-owned =config/=, =core/= or =host/= boundary.
 
 * Current State
-Verified on the T480s on 2026-08-15:
+The authoritative checkout is
+=/home/skydive420dz/Projects/t480s-dotfiles= on =main=.  The accepted Yazi
+replacement began from synchronized =main= and =origin/main= at
+=5cb04a9d98bf6d2251c1eda34732ffff24eaa46d= and did not change =flake.lock=;
+its SHA-256 remains
+=f3c0eace8401b44d3d9ea4cf774c8caff10165a6e258eed0e93f461ca03b440e=.
 
-- checkout: =/home/skydive420dz/Projects/t480s-dotfiles=;
-- branch: =main=;
-- repository baseline: this intended T480s tree is the single parentless
-  initial commit; no inherited commit is an ancestor;
-- flake output: =nixosConfigurations.t480s=;
-- =flake.lock=: intentionally absent and not authorized for regeneration;
-- current runtime system:
-  =/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2=;
-- persistent system profile:
-  =/nix/store/dz6wmbdjrrp5aa4025iyz1ppkfv2vgx1-nixos-system-t480s-26.11.20260729.0954f7e=;
-- booted system:
-  =/nix/store/a1rglfnj8fpql25w301v5xwk05qvw266-nixos-system-t480s-26.11.20260729.0954f7e=;
-- runtime state: =running= with no failed system units at the verification
-  point.
+Generation 10
+=/nix/store/q80fa9kixjr83ycjag9g9hwbnyjj0a18-nixos-system-t480s-26.11.20260829.d2f6794=
+is current, booted and profile-selected.  Generation 9
+=/nix/store/ysxm6ikknlzfvqnkcrvmv3kjvwc2w28j-nixos-system-t480s-26.11.20260829.d2f6794=
+remains the retained fallback.
 
-The current runtime is a temporary =test= activation of the exact =74891x1h...=
-candidate; the persistent profile and boot default remain unchanged.
-Activation and automated runtime checks pass.  The existing X11 session still
-runs the prior DWM 6.6 binary, so =Super+e= is not active until DWM/X11 is
-restarted and accepted; =Super+t= remains unchanged.  Persistent promotion,
-reboot and push remain separate.
-
-Source-only validation is complete: all 38 Nix files parse and pass =nixfmt=;
-Fish, display-profile shell syntax, all 28 Emacs Lisp readers, import/link
-paths, exclusion scans, and staged-tree whitespace checks pass.  A new
-non-activating build also passes.  Temporary activation and automated runtime
-acceptance pass; physical acceptance remains separate.
-
-The Emacs user-cache bootstrap also completed: Package.el metadata refreshed,
-Magit and Ledger mode installed, and the vterm native module built and passed a
-batch load.  Home Manager restarted the daemon; the replacement is active with
-=Result=success= and no failed user units.  Runtime checks confirmed Magit,
-vterm, Ledger, fonts, TeX, ImageMagick and the generated aliases.  Interactive
-workflow and keybinding acceptance remain user checks.
+Yazi 26.8.15 replaces Ranger.  The =fm= alias launches Home Manager's =y=
+wrapper, =FILE_MANAGER= is =yazi=, image preview passed locally and through
+SSH, and the =nsxiv= image opener passed physical acceptance.  Ranger is
+absent and no failed system or user units were observed.  Exact build,
+activation, staging and reboot evidence is maintained in
+[[file:docs/t480s/handoff.org][the handoff]] and
+[[file:docs/t480s/gates.org][the gate ledger]].
 
 * Human Map
 | Path | Owner |
@@ -62,34 +46,18 @@ workflow and keybinding acceptance remain user checks.
 | =docs/t480s/= | Gate evidence, design, assessment and acceptance records |
 
 The import direction is =flake -> host -> core=.  Core never imports host.
-Nix and Home Manager install packages and create links; application-native
-behavior remains in =config/= so it can be edited without a rebuild.  DWM,
+Nix and Home Manager own packages, generated configuration and live links.
+Live-editable application behavior remains in =config/=; Yazi uses its native
+Home Manager module because no separate live configuration is required.  DWM,
 dmenu and slstatus headers are compile-time exceptions.
 
 * Current Authorization Boundary
-The completed slice was source sanitation, a non-activating build and a
-temporary test activation on the T480s only:
-
-- classified ownership and consumers;
-- moved or revised only already approved content;
-- sanitized foreign-machine assumptions;
-- updated documentation;
-- removed the unused Ponytail flake input;
-- adapted T430 Bluetooth media controls to BlueZ's native user unit;
-- ran source-only syntax, reference and whitespace checks;
-- reconciled the complete approved tree into the Git index;
-- built the exact =nixosConfigurations.t480s= toplevel without a result link or
-  lockfile write;
-- temporarily activated that exact candidate, including the expected Emacs
-  daemon restart, and completed automated runtime checks;
-- added the later approved =Super+e= Emacs launcher without changing =Super+t=;
-- built and temporarily test-activated that later source without a result link
-  or lockfile write; the existing DWM/X11 session was not restarted;
-- recorded the intended T480s tree as one parentless initial commit.
-
-It does not authorize MSI access or changes, =flake.lock= generation, hardware
-regeneration, persistent profile or boot-default change, reboot, physical
-acceptance or push.
+The accepted Yazi slice completed source validation, one no-link build, one test
+activation, persistent boot staging, one fresh reboot and physical acceptance
+on the T480s.  This repository closeout records and publishes those accepted
+bytes.  It does not authorize MSI access, another build or activation, another
+reboot, hardware regeneration, lockfile changes, generation deletion or new
+application policy.
 
 * Project Documents
 - [[file:docs/t480s/tree-design.org][Repository ownership, live/config boundary and sanitation map]]
@@ -109,37 +77,10 @@ newer approved live =config/emacs/= ownership; that historical candidate is not
 the current working source.
 
 * Current Runtime And Next Gate
-The functional Nix source in the repository baseline passed the exact
-non-activating command:
-
-#+begin_src sh
-nix --extra-experimental-features 'nix-command flakes' \
-  build --print-out-paths \
-  '.#nixosConfigurations."t480s".config.system.build.toplevel' \
-  --no-link --no-write-lock-file --show-trace
-#+end_src
-
-An earlier current-source candidate was rejected before activation because its
-Home Manager =mpris-proxy= wants link used BlueZ's nonexistent =share/= unit
-path.  The corrected =etc/systemd/user/mpris-proxy.service= link resolves, its
-unit verifies, and all Home Manager links resolve.  The later Emacs-repair
-candidate is:
-
-#+begin_example
-/nix/store/vwnm1y20943v5vqa96404mkhbq4zdnqg-nixos-system-t480s-26.11.20260813.0e251e2
-#+end_example
-
-Its temporary test activation and automated runtime checks pass.  The later
-DWM source built non-activating as:
-
-#+begin_example
-/nix/store/74891x1hfwmpdirlwxjdaabyia7svn95-nixos-system-t480s-26.11.20260813.0e251e2
-#+end_example
-
-That candidate is the current temporary runtime.  The existing X11 session
-still runs the prior DWM binary, so the next runtime gate is DWM/X11 restart
-and =Super+e=/=Super+t= acceptance.  Persistent promotion, reboot and push
-remain separate results.
+Generation 10 =q80fa9...= is current, booted and profile-selected; generation 9
+=ysxm6ik...= remains the rollback generation.  No Yazi deployment work remains.
+Any later source, build, activation, reboot or hardware change requires a new
+gate.  Browser WebAuthn remains deferred.
 
 * Explicit Omissions And Unresolved Work
 Explicit omissions include Firefox, Neovim, =st=, Hyprland, a Wayland session,
