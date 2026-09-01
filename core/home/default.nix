@@ -10,7 +10,7 @@
     ./modules/packages/fzf.nix
     ./modules/packages/ghostty.nix
     ./modules/packages/git.nix
-    ./modules/packages/ranger.nix
+    ./modules/packages/yazi.nix
     ./modules/packages/tmux
     ./modules/services/emacs.nix
     ./modules/services/mpris-proxy.nix

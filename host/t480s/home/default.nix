@@ -28,7 +28,7 @@ in
       EDITOR = "emacsclient -t -a emacs";
       VISUAL = "emacsclient -t -a emacs";
       TERMINAL = "ghostty";
-      FILE_MANAGER = "ranger";
+      FILE_MANAGER = "yazi";
     };
 
     file = {

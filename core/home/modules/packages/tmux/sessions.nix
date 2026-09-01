@@ -58,7 +58,7 @@
             "$tmux_bin" new-session -d -s "$target" -c "$dir" -n main
             ;;
           dots)
-            "$tmux_bin" new-session -d -s "$target" -c "$dir" -n files ranger
+            "$tmux_bin" new-session -d -s "$target" -c "$dir" -n files yazi
             "$tmux_bin" split-window -h -t "$target:files" -c "$dir"
             "$tmux_bin" new-window -t "$target:" -c "$dir" -n term
             "$tmux_bin" select-window -t "$target:files"

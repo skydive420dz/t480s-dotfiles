@@ -1,6 +1,6 @@
 alias vi 'emacsclient -t -a emacs'
 alias v 'emacsclient -t -a emacs'
-alias fm ranger
+alias fm y
 
 if status is-login; and test -z "$SSH_CONNECTION"; and test -z "$DISPLAY"; and test (tty) = /dev/tty1
     exec startx
